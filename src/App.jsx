@@ -136,31 +136,10 @@ function App() {
         );
       case 'activity_logs':
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.85rem', marginBottom: '0.4rem', fontWeight: 700 }}>Activity Logs Ledger</h2>
-            <div className="glass-panel" style={{ padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Vault Registry Operations</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {goldBars.map((bar, idx) => (
-                  <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
-                    <span>Registered Gold Bar <strong style={{ color: 'white' }}>{bar.serialNumber}</strong> ({bar.weight} kg)</span>
-                    <span style={{ color: 'hsl(var(--gold-primary))', fontWeight: 600 }}>PALLET LOCATION: {bar.palletId}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="glass-panel" style={{ padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Logistics Scheduled Deliveries</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {transportRequests.map((req, idx) => (
-                  <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
-                    <span>Shipment <strong style={{ color: 'white' }}>{req.id}</strong> ({req.barCount} bars)</span>
-                    <span style={{ color: 'hsl(var(--accent-blue))', fontWeight: 600 }}>{req.origin} → {req.destination}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <Logistics 
+            transportRequests={transportRequests} 
+            onAddTransportRequest={addTransportRequest} 
+          />
         );
       case 'alerts':
         return (
