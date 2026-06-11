@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Users, UserCheck, AlertTriangle, Fingerprint, Eye, RefreshCw, RotateCcw, Lock, Unlock, ShieldAlert } from 'lucide-react';
+import { Shield, Users, UserCheck, AlertTriangle, Fingerprint, Eye, RotateCcw, Unlock, ShieldAlert } from 'lucide-react';
 
 export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
   const [selectedStaff, setSelectedStaff] = useState('agent-1');
   const [scanType, setScanType] = useState('Fingerprint');
-  const [scanStatus, setScanStatus] = useState('READY'); // READY, ARMED, SCANNING, GRANTED, DENIED
+  const [scanStatus, setScanStatus] = useState('READY'); // READY, SCANNING, GRANTED, DENIED
   const [errorMessage, setErrorMessage] = useState('');
   const [holdProgress, setHoldProgress] = useState(0);
-  const [countdown, setCountdown] = useState(5);
 
-  const holdIntervalRef = useRef(null);
-  const countdownIntervalRef = useRef(null);
+  const scanIntervalRef = useRef(null);
 
   const staffOptions = {
     'agent-1': { name: 'Director Marcus Vance', role: 'Security Chief', clearance: 'Level 5 (Super)', active: true },
@@ -24,61 +22,28 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      clearInterval(holdIntervalRef.current);
-      clearInterval(countdownIntervalRef.current);
+      clearInterval(scanIntervalRef.current);
     };
   }, []);
 
-  const armSensor = () => {
-    clearInterval(holdIntervalRef.current);
-    clearInterval(countdownIntervalRef.current);
-
-    setScanStatus('ARMED');
-    setHoldProgress(0);
-    setCountdown(5);
-    setErrorMessage('');
-
-    // Start 5 second timeout countdown
-    countdownIntervalRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(countdownIntervalRef.current);
-          setScanStatus('READY');
-          setErrorMessage('SCAN TIMEOUT: No biometric input detected on sensor.');
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const handleTouchStart = () => {
-    if (scanStatus !== 'ARMED') return;
-
-    clearInterval(countdownIntervalRef.current);
+  const startAutomatedScan = () => {
+    clearInterval(scanIntervalRef.current);
     setScanStatus('SCANNING');
     setHoldProgress(0);
+    setErrorMessage('');
 
-    // Requires user to hold down for 1.2 seconds (20 ticks * 60ms)
-    holdIntervalRef.current = setInterval(() => {
-      setHoldProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(holdIntervalRef.current);
-          completeVerification();
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 60);
-  };
-
-  const handleTouchEnd = () => {
-    if (scanStatus !== 'SCANNING') return;
-
-    clearInterval(holdIntervalRef.current);
-    setHoldProgress(0);
-    setScanStatus('READY');
-    setErrorMessage('SCAN ABORTED: Biometric contact lost mid-scan.');
+    // Automate progress bar from 0 to 100 over 1.2 seconds (12 ticks * 100ms)
+    let progress = 0;
+    scanIntervalRef.current = setInterval(() => {
+      progress += 10;
+      if (progress >= 100) {
+        clearInterval(scanIntervalRef.current);
+        setHoldProgress(100);
+        completeVerification();
+      } else {
+        setHoldProgress(progress);
+      }
+    }, 100);
   };
 
   const completeVerification = () => {
@@ -113,16 +78,15 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
       });
     }
 
+    // Reset scanner to READY state after 3 seconds
     setTimeout(() => {
       setScanStatus('READY');
       setHoldProgress(0);
     }, 3000);
   };
 
-  // Class selection based on scanning status
   const getScannerClass = () => {
     switch(scanStatus) {
-      case 'ARMED': return 'biometric-armed';
       case 'SCANNING': return 'biometric-scanning';
       case 'GRANTED': return 'biometric-granted';
       case 'DENIED': return 'biometric-denied';
@@ -167,7 +131,7 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
               <select 
                 value={selectedStaff} 
                 onChange={(e) => setSelectedStaff(e.target.value)} 
-                disabled={scanStatus === 'ARMED' || scanStatus === 'SCANNING'}
+                disabled={scanStatus === 'SCANNING'}
                 style={{ width: '100%' }}
               >
                 {Object.entries(staffOptions).map(([key, opt]) => (
@@ -186,7 +150,7 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                     value="Fingerprint" 
                     checked={scanType === 'Fingerprint'} 
                     onChange={() => setScanType('Fingerprint')}
-                    disabled={scanStatus === 'ARMED' || scanStatus === 'SCANNING'}
+                    disabled={scanStatus === 'SCANNING'}
                     style={{ cursor: 'pointer', accentColor: 'hsl(var(--gold-primary))' }}
                   />
                   Fingerprint ID
@@ -198,7 +162,7 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                     value="Retinal Scan" 
                     checked={scanType === 'Retinal Scan'} 
                     onChange={() => setScanType('Retinal Scan')}
-                    disabled={scanStatus === 'ARMED' || scanStatus === 'SCANNING'}
+                    disabled={scanStatus === 'SCANNING'}
                     style={{ cursor: 'pointer', accentColor: 'hsl(var(--gold-primary))' }}
                   />
                   Retinal Iris Scan
@@ -219,11 +183,12 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                 alignItems: 'center',
                 position: 'relative',
                 overflow: 'hidden',
-                transition: 'all 0.4s ease'
+                transition: 'all 0.4s ease',
+                userSelect: 'none'
               }}
             >
               {/* Scanline beam visual for scan states */}
-              {(scanStatus === 'SCANNING' || scanStatus === 'ARMED') && (
+              {scanStatus === 'SCANNING' && (
                 <div className="laser-line" />
               )}
 
@@ -244,61 +209,13 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                     {scanType === 'Fingerprint' ? <Fingerprint size={48} /> : <Eye size={48} />}
                   </div>
                   <span style={{ fontSize: '0.85rem', color: 'hsl(var(--text-secondary))', fontWeight: 600 }}>SCANNER ONLINE</span>
-                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.2rem' }}>Arm sensor to initialize scan sequence</span>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.2rem' }}>Ready to capture biometric signature</span>
                 </>
-              )}
-
-              {/* Armed State (Waiting for Press) */}
-              {scanStatus === 'ARMED' && (
-                <div 
-                  onMouseDown={handleTouchStart}
-                  onMouseUp={handleTouchEnd}
-                  onMouseLeave={handleTouchEnd}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    width: '100%',
-                    height: '100%',
-                    justifyContent: 'center',
-                    userSelect: 'none',
-                    background: 'hsl(var(--gold-primary) / 0.02)'
-                  }}
-                >
-                  <div style={{
-                    background: 'hsl(var(--gold-primary) / 0.08)',
-                    padding: '1.15rem',
-                    borderRadius: '50%',
-                    border: '2px solid hsl(var(--gold-primary))',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '0.75rem',
-                    boxShadow: '0 0 20px hsl(var(--gold-primary) / 0.25)',
-                    color: 'hsl(var(--gold-primary))'
-                  }}>
-                    {scanType === 'Fingerprint' ? (
-                      <Fingerprint size={48} style={{ transform: 'scale(1.05)' }} />
-                    ) : (
-                      <Eye size={48} style={{ transform: 'scale(1.05)' }} />
-                    )}
-                  </div>
-                  <span style={{ fontSize: '0.95rem', color: 'white', fontWeight: 700, letterSpacing: '0.04em' }}>PRESS & HOLD SENSOR</span>
-                  <span style={{ fontSize: '0.75rem', color: '#f59e0b', marginTop: '0.3rem', fontWeight: 600 }}>
-                    Sensor disarms in {countdown}s
-                  </span>
-                </div>
               )}
 
               {/* Scanning State */}
               {scanStatus === 'SCANNING' && (
                 <div 
-                  onMouseUp={handleTouchEnd}
-                  onMouseLeave={handleTouchEnd}
-                  onTouchEnd={handleTouchEnd}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -306,7 +223,6 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                     width: '100%',
                     height: '100%',
                     justifyContent: 'center',
-                    userSelect: 'none',
                     background: 'hsl(var(--accent-blue) / 0.03)'
                   }}
                 >
@@ -329,12 +245,12 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                     )}
                   </div>
                   <span style={{ fontSize: '0.9rem', color: 'hsl(var(--accent-blue))', fontWeight: 700, letterSpacing: '0.04em' }}>
-                    {scanType === 'Fingerprint' ? 'ANALYZING WHORLS...' : 'ALIGNING IRIS MESH...'}
+                    {scanType === 'Fingerprint' ? 'ANALYZING WHORLS...' : 'ALIGNING IRIS MESH...'} {holdProgress}%
                   </span>
                   
                   {/* Progress gauge */}
                   <div style={{ width: '60%', height: '5px', background: 'hsl(var(--border-color))', borderRadius: '3px', marginTop: '12px', overflow: 'hidden' }}>
-                    <div style={{ width: `${holdProgress}%`, height: '100%', background: 'hsl(var(--gold-primary))', transition: 'width 0.06s linear' }} />
+                    <div style={{ width: `${holdProgress}%`, height: '100%', background: 'hsl(var(--gold-primary))', transition: 'width 0.1s linear' }} />
                   </div>
                 </div>
               )}
@@ -391,8 +307,8 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
             )}
 
             <button 
-              onClick={armSensor}
-              disabled={scanStatus === 'ARMED' || scanStatus === 'SCANNING' || scanStatus === 'GRANTED' || scanStatus === 'DENIED'}
+              onClick={startAutomatedScan}
+              disabled={scanStatus === 'SCANNING' || scanStatus === 'GRANTED' || scanStatus === 'DENIED'}
               className="btn-primary"
               style={{
                 padding: '0.85rem',
@@ -401,7 +317,7 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                 cursor: 'pointer'
               }}
             >
-              {scanStatus === 'READY' ? 'Arm Biometric Sensor' : 'Sensor Status Active...'}
+              {scanStatus === 'READY' ? 'Initialize Biometric Scan' : 'Scanner Processing...'}
             </button>
           </div>
         </div>
