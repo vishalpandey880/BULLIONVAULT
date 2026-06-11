@@ -9,7 +9,9 @@ import {
   Activity, 
   Lock, 
   Globe,
-  DollarSign
+  Settings as SettingsIcon,
+  Bell,
+  ClipboardList
 } from 'lucide-react';
 
 // Import Feature Components
@@ -46,14 +48,34 @@ function App() {
   const [accessLogs, setAccessLogs] = useState(INITIAL_ACCESS_LOGS);
   const [transportRequests, setTransportRequests] = useState(INITIAL_TRANSPORT_REQUESTS);
   const [marketPrice, setMarketPrice] = useState(2350.50); // initial spot price per oz
-  const [tickerNews, setTickerNews] = useState([
-    'LONDON: SECURE TRANSIT ARMORED AR-4 READY FOR ROUTE COMPLIANCE',
-    'ZURICH: ALPINE STACK COMPLETE. SHELVING MARGINS NOMINAL',
-    'SINGAPORE: LBMA REGISTRY COMPLETED WITH ZERO REPORTED ANOMALIES',
-    'NEW YORK: FED SUBLEVEL UPGRADE STAGE 4 COMPLETE',
-  ]);
+  
+  // Real-time ticking UTC clock
+  const [timeString, setTimeString] = useState('');
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const hrs = String(now.getUTCHours()).padStart(2, '0');
+      const mins = String(now.getUTCMinutes()).padStart(2, '0');
+      const secs = String(now.getUTCSeconds()).padStart(2, '0');
+      setTimeString(`${hrs}:${mins}:${secs}`);
+    };
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Handle updates
+  // Simulate market price fluctuations slightly
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMarketPrice(prev => {
+        const delta = (Math.random() * 4 - 2);
+        return parseFloat((prev + delta).toFixed(2));
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle state updates
   const addGoldBar = (newBar) => {
     setGoldBars(prev => [newBar, ...prev]);
   };
@@ -75,254 +97,301 @@ function App() {
     setTransportRequests(prev => [newRequest, ...prev]);
   };
 
-  // Simulate market price fluctuations slightly
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMarketPrice(prev => {
-        const delta = (Math.random() * 4 - 2);
-        return parseFloat((prev + delta).toFixed(2));
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   // Compute stats
   const totalWeight = goldBars.reduce((sum, b) => sum + b.weight, 0);
   const totalValue = totalWeight * 32.1507 * marketPrice;
+
+  // Render content based on sidebar tab
+  const renderContent = () => {
+    switch(activeTab) {
+      case 'overview':
+        return (
+          <Overview 
+            goldBars={goldBars} 
+            accessLogs={accessLogs} 
+            transportRequests={transportRequests} 
+            marketPrice={marketPrice} 
+          />
+        );
+      case 'registry':
+        return (
+          <GoldRegistry 
+            goldBars={goldBars} 
+            onAddGoldBar={addGoldBar} 
+            marketPrice={marketPrice}
+            onUpdateMarketPrice={setMarketPrice}
+          />
+        );
+      case 'access':
+        return (
+          <AccessLog 
+            accessLogs={accessLogs} 
+            onAddLog={addAccessLog} 
+            onUndoLog={undoAccessLog} 
+          />
+        );
+      case 'shelves':
+        return (
+          <ShelfLoadManager />
+        );
+      case 'activity_logs':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.85rem', marginBottom: '0.4rem', fontWeight: 700 }}>Activity Logs Ledger</h2>
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Vault Registry Operations</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {goldBars.map((bar, idx) => (
+                  <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
+                    <span>Registered Gold Bar <strong style={{ color: 'white' }}>{bar.serialNumber}</strong> ({bar.weight} kg)</span>
+                    <span style={{ color: 'hsl(var(--gold-primary))', fontWeight: 600 }}>PALLET LOCATION: {bar.palletId}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="glass-panel" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Logistics Scheduled Deliveries</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {transportRequests.map((req, idx) => (
+                  <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
+                    <span>Shipment <strong style={{ color: 'white' }}>{req.id}</strong> ({req.barCount} bars)</span>
+                    <span style={{ color: 'hsl(var(--accent-blue))', fontWeight: 600 }}>{req.origin} → {req.destination}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      case 'alerts':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.85rem', marginBottom: '0.4rem', fontWeight: 700 }}>Active System Alerts</h2>
+            <div className="glass-panel" style={{ padding: '1.5rem', border: '1px solid hsl(var(--success))', background: 'rgba(34,197,94,0.02)' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#4ade80', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Shield size={18} /> Network Security Status: Active
+              </h3>
+              <p style={{ fontSize: '0.88rem' }}>No perimeter intrusion signatures or active system bypasses reported in the last 24 hours.</p>
+            </div>
+            {accessLogs.some(l => l.status.includes('DENIED')) && (
+              <div className="glass-panel" style={{ padding: '1.5rem', border: '1px solid hsl(var(--danger))', background: 'rgba(239,68,68,0.02)' }}>
+                <h3 style={{ fontSize: '1.1rem', color: '#f87171', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Bell size={18} /> Security Alerts Ledger
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
+                  {accessLogs.filter(l => l.status.includes('DENIED')).map((log, idx) => (
+                    <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', borderLeft: '4px solid hsl(var(--danger))' }}>
+                      <span>Unauthorized Biometric Scan: <strong style={{ color: 'white' }}>{log.personnel}</strong> ({log.role})</span>
+                      <span style={{ color: '#f87171', fontWeight: 600 }}>{log.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      case 'reports':
+        return (
+          <CustomsChecker goldBars={goldBars} />
+        );
+      case 'settings':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.85rem', marginBottom: '0.4rem', fontWeight: 700 }}>System Settings & Calibration</h2>
+            <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Market Pricing</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'hsl(var(--text-secondary))' }}>Gold Spot Market Value (USD/oz)</label>
+                <input 
+                  type="number" 
+                  value={marketPrice}
+                  onChange={(e) => setMarketPrice(Number(e.target.value))}
+                  style={{ width: '200px' }}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   const getNavButtonStyle = (tabName) => {
     const isActive = activeTab === tabName;
     return {
       display: 'flex',
       alignItems: 'center',
-      gap: '0.9rem',
+      gap: '0.85rem',
       width: '100%',
-      padding: '0.85rem 1.15rem',
-      background: isActive ? 'linear-gradient(90deg, hsl(var(--gold-primary) / 0.15) 0%, transparent 100%)' : 'transparent',
+      padding: '0.75rem 1rem',
+      background: isActive ? 'linear-gradient(90deg, hsl(var(--gold-primary) / 0.1) 0%, transparent 100%)' : 'transparent',
       border: 'none',
       borderLeft: isActive ? '3px solid hsl(var(--gold-primary))' : '3px solid transparent',
       color: isActive ? 'white' : 'hsl(var(--text-secondary))',
-      borderRadius: '0 8px 8px 0',
+      borderRadius: '0 6px 6px 0',
       fontWeight: isActive ? 600 : 400,
       textAlign: 'left',
-      fontSize: '0.92rem',
+      fontSize: '0.9rem',
       cursor: 'pointer',
-      transition: 'all 0.25s ease',
-      boxShadow: isActive ? '0 4px 12px hsl(var(--gold-primary) / 0.02)' : 'none'
+      transition: 'all 0.25s ease'
     };
   };
+
+  // Compute active alerts
+  const alertCount = accessLogs.filter(l => !l.undone && l.status.includes('DENIED')).length;
 
   return (
     <div className="app-container">
       
-      {/* Sidebar Navigation */}
-      <aside className="sidebar">
+      {/* Top Status Ribbon (First Level) */}
+      <div style={{
+        height: '40px',
+        backgroundColor: '#0a0d14',
+        borderBottom: '1px solid hsl(var(--border-color))',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 1.5rem',
+        justifyContent: 'space-between',
+        fontSize: '0.78rem',
+        color: 'hsl(var(--text-secondary))',
+        fontWeight: 500,
+        zIndex: 20
+      }}>
+        {/* Left Side Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Shield size={16} style={{ color: 'hsl(var(--gold-primary))' }} />
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '0.06em', color: 'white' }}>
+            AURUMSEC
+          </span>
+          <span style={{ color: 'hsl(var(--text-muted))' }}>|</span>
+          <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.72rem', fontWeight: 600 }}>
+            Vault Management System
+          </span>
+        </div>
+
+        {/* Right Side Clock/Log */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontFamily: 'var(--font-mono)' }}>
+          <span>Logged: <strong style={{ color: 'hsl(var(--gold-primary))' }}>OPERATOR A77</strong> (ACTIVE)</span>
+          <span style={{ color: 'hsl(var(--text-muted))' }}>-</span>
+          <span style={{ color: 'white', fontWeight: 600 }}>{timeString} UTC</span>
+        </div>
+      </div>
+
+      {/* Main Framework Layout */}
+      <div className="app-main">
         
-        {/* Brand/Logo */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '0.85rem', 
-          marginBottom: '2.5rem', 
-          paddingBottom: '1.5rem', 
-          borderBottom: '1px solid hsl(var(--border-color))' 
-        }}>
-          <div style={{
-            background: 'hsl(var(--gold-primary) / 0.1)',
-            padding: '0.5rem',
-            borderRadius: '10px',
-            border: '1px solid hsl(var(--gold-primary) / 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 15px hsl(var(--gold-primary) / 0.08)'
+        {/* Sidebar Navigation */}
+        <aside className="sidebar">
+          
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flexGrow: 1 }}>
+            <button onClick={() => setActiveTab('overview')} style={getNavButtonStyle('overview')}>
+              <Activity size={16} style={{ color: activeTab === 'overview' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
+              Overview
+            </button>
+
+            <button onClick={() => setActiveTab('registry')} style={getNavButtonStyle('registry')}>
+              <Database size={16} style={{ color: activeTab === 'registry' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
+              Vaults
+            </button>
+
+            <button onClick={() => setActiveTab('access')} style={getNavButtonStyle('access')}>
+              <UserCheck size={16} style={{ color: activeTab === 'access' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
+              Biometrics
+            </button>
+
+            <button onClick={() => setActiveTab('shelves')} style={getNavButtonStyle('shelves')}>
+              <Grid size={16} style={{ color: activeTab === 'shelves' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
+              Assets
+            </button>
+
+            <button onClick={() => setActiveTab('activity_logs')} style={getNavButtonStyle('activity_logs')}>
+              <ClipboardList size={16} style={{ color: activeTab === 'activity_logs' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
+              Activity Logs
+            </button>
+
+            <button onClick={() => setActiveTab('alerts')} style={getNavButtonStyle('alerts')}>
+              <Bell size={16} style={{ color: activeTab === 'alerts' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
+              Alerts
+            </button>
+
+            <button onClick={() => setActiveTab('reports')} style={getNavButtonStyle('reports')}>
+              <FileCheck size={16} style={{ color: activeTab === 'reports' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
+              Reports
+            </button>
+
+            <button onClick={() => setActiveTab('settings')} style={getNavButtonStyle('settings')}>
+              <SettingsIcon size={16} style={{ color: activeTab === 'settings' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
+              Settings
+            </button>
+          </nav>
+
+          {/* Sidebar Spot Valuation footer */}
+          <div style={{ borderTop: '1px solid hsl(var(--border-color))', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'hsl(var(--text-muted))' }}>
+              <span>SPOT GOLD</span>
+              <span style={{ color: 'hsl(var(--gold-primary))', fontWeight: 'bold' }}>${marketPrice.toFixed(2)}/oz</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'hsl(var(--text-muted))' }}>
+              <span>NET WORTH</span>
+              <span style={{ color: 'white', fontWeight: 'bold' }}>${(totalValue / 1e6).toFixed(2)}M</span>
+            </div>
+          </div>
+
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="main-content">
+          
+          {/* Sub-Header Ribbon (Second Level) */}
+          <header style={{ 
+            height: '50px', 
+            borderBottom: '1px solid hsl(var(--border-color))', 
+            display: 'flex', 
+            alignItems: 'center', 
+            padding: '0 1.5rem',
+            background: 'hsl(var(--bg-secondary) / 0.5)',
+            justifyContent: 'space-between',
+            flexShrink: 0
           }}>
-            <Shield style={{ color: 'hsl(var(--gold-primary))', filter: 'drop-shadow(0 0 8px hsl(var(--gold-primary) / 0.45))' }} size={28} />
-          </div>
-          <div>
-            <h1 className="title-neon" style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>BULLIONVAULT</h1>
-            <span style={{ fontSize: '0.65rem', color: 'hsl(var(--text-muted))', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>High-Security Console</span>
-          </div>
-        </div>
+            {/* Left title */}
+            <h2 style={{ 
+              fontSize: '1rem', 
+              fontWeight: 800, 
+              fontFamily: 'var(--font-display)', 
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'white'
+            }}>
+              {activeTab === 'overview' ? 'DASHBOARD' : activeTab.replace('_', ' ')}
+            </h2>
 
-        {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flexGrow: 1 }}>
-          <button 
-            onClick={() => setActiveTab('overview')}
-            style={getNavButtonStyle('overview')}
-          >
-            <Activity size={18} style={{ color: activeTab === 'overview' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
-            Overview & Status Hub
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('registry')}
-            style={getNavButtonStyle('registry')}
-          >
-            <Database size={18} style={{ color: activeTab === 'registry' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
-            Gold Bar Registry
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('access')}
-            style={getNavButtonStyle('access')}
-          >
-            <UserCheck size={18} style={{ color: activeTab === 'access' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
-            Biometric Access Log
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('logistics')}
-            style={getNavButtonStyle('logistics')}
-          >
-            <Truck size={18} style={{ color: activeTab === 'logistics' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
-            Transit Organizer
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('customs')}
-            style={getNavButtonStyle('customs')}
-          >
-            <FileCheck size={18} style={{ color: activeTab === 'customs' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
-            Customs Paper Checker
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('shelves')}
-            style={getNavButtonStyle('shelves')}
-          >
-            <Grid size={18} style={{ color: activeTab === 'shelves' ? 'hsl(var(--gold-primary))' : 'inherit' }} />
-            Shelf Load Manager
-          </button>
-        </nav>
-
-        {/* Sidebar Footer Info */}
-        <div style={{ marginTop: 'auto', borderTop: '1px solid hsl(var(--border-color))', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
-            <span style={{ color: 'hsl(var(--text-muted))', fontWeight: 500 }}>Vault Status</span>
-            <span className="badge badge-success" style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem' }}>ACTIVE</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
-            <span style={{ color: 'hsl(var(--text-muted))', fontWeight: 500 }}>Spot Gold</span>
-            <span style={{ fontWeight: 'bold', color: 'hsl(var(--gold-primary))', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              <DollarSign size={11} style={{ strokeWidth: 2.5 }} />
-              {marketPrice.toFixed(2)} /oz
-            </span>
-          </div>
-        </div>
-
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="main-content">
-        
-        {/* Header Ribbon / Broadcast Ticker */}
-        <header style={{ 
-          height: '65px', 
-          borderBottom: '1px solid hsl(var(--border-color))', 
-          display: 'flex', 
-          alignItems: 'center', 
-          padding: '0 2rem',
-          background: 'hsl(var(--bg-secondary) / 0.45)',
-          backdropFilter: 'blur(8px)',
-          justifyContent: 'space-between',
-          overflow: 'hidden',
-          zIndex: 5
-        }}>
-          {/* Live broadcast ticker feed */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '68%' }}>
-            <span className="badge badge-gold" style={{ fontSize: '0.68rem', padding: '0.35rem 0.75rem', flexShrink: 0, zIndex: 2 }}>
-              <Globe size={11} style={{ marginRight: '0.25rem', animation: 'radar-spin 4s linear infinite' }} /> Global Telex
-            </span>
-            
-            <div style={{ width: '100%', overflow: 'hidden', position: 'relative' }}>
-              <div 
-                style={{ 
-                  display: 'inline-block',
-                  whiteSpace: 'nowrap',
-                  animation: 'ticker 40s linear infinite',
-                  color: 'hsl(var(--text-secondary))',
-                  fontSize: '0.78rem',
-                  fontFamily: 'var(--font-mono)',
-                  letterSpacing: '0.06em'
-                }}
-              >
-                {tickerNews.join('   •   ')} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {tickerNews.join('   •   ')}
-              </div>
+            {/* Right Status Badge Grid */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span className="badge badge-success" style={{ fontSize: '0.62rem', padding: '0.2rem 0.5rem', border: '1px solid hsl(var(--success) / 0.2)' }}>
+                SYSTEM SECURE
+              </span>
+              <span className="badge badge-blue" style={{ fontSize: '0.62rem', padding: '0.2rem 0.5rem', border: '1px solid hsl(var(--accent-blue) / 0.2)' }}>
+                NETWORK: ENCRYPTED
+              </span>
+              <span className="badge" style={{ 
+                fontSize: '0.62rem', 
+                padding: '0.2rem 0.5rem', 
+                background: alertCount > 0 ? 'hsl(var(--danger) / 0.1)' : 'hsl(var(--text-muted) / 0.08)',
+                color: alertCount > 0 ? '#f87171' : 'hsl(var(--text-muted))',
+                border: alertCount > 0 ? '1px solid hsl(var(--danger) / 0.2)' : '1px solid hsl(var(--border-color))'
+              }}>
+                ALERTS: {alertCount}
+              </span>
             </div>
-          </div>
+          </header>
 
-          {/* Quick Info Grid */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.75rem', flexShrink: 0 }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.62rem', color: 'hsl(var(--text-muted))', fontWeight: 700, letterSpacing: '0.05em' }}>VAULT NET WORTH</div>
-              <div className="title-neon" style={{ fontSize: '1.05rem', fontWeight: 800, color: 'white', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '1px', justifyContent: 'flex-end' }}>
-                <span style={{ color: 'hsl(var(--gold-primary))', fontSize: '0.9rem' }}>$</span>
-                {totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </div>
-            </div>
-            <div style={{ height: '28px', width: '1px', background: 'hsl(var(--border-color))' }}></div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ 
-                width: '8px', 
-                height: '8px', 
-                borderRadius: '50%', 
-                background: '#4ade80', 
-                boxShadow: '0 0 10px #22c55e',
-                animation: 'pulse-light 2s infinite'
-              }}></div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'hsl(var(--text-secondary))', letterSpacing: '0.05em' }}>SECURE NET</span>
-            </div>
-          </div>
-        </header>
+          {/* Render Active Component Tab */}
+          <section className="content-body">
+            {renderContent()}
+          </section>
 
-        {/* Content Body Rendering active tab */}
-        <section className="content-body">
-          {activeTab === 'overview' && (
-            <Overview 
-              goldBars={goldBars} 
-              accessLogs={accessLogs} 
-              transportRequests={transportRequests} 
-              marketPrice={marketPrice} 
-            />
-          )}
-
-          {activeTab === 'registry' && (
-            <GoldRegistry 
-              goldBars={goldBars} 
-              onAddGoldBar={addGoldBar} 
-              marketPrice={marketPrice}
-              onUpdateMarketPrice={setMarketPrice}
-            />
-          )}
-
-          {activeTab === 'access' && (
-            <AccessLog 
-              accessLogs={accessLogs} 
-              onAddLog={addAccessLog} 
-              onUndoLog={undoAccessLog} 
-            />
-          )}
-
-          {activeTab === 'logistics' && (
-            <Logistics 
-              transportRequests={transportRequests} 
-              onAddTransportRequest={addTransportRequest} 
-            />
-          )}
-
-          {activeTab === 'customs' && (
-            <CustomsChecker 
-              goldBars={goldBars} 
-            />
-          )}
-
-          {activeTab === 'shelves' && (
-            <ShelfLoadManager />
-          )}
-        </section>
-
-      </main>
+        </main>
+      </div>
 
     </div>
   );
