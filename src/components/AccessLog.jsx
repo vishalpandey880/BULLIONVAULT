@@ -368,20 +368,22 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                       borderLeft: `4px solid ${log.undone ? '#6b7280' : isDenied ? '#ef4444' : '#22c55e'}`,
                       background: log.undone 
                         ? 'transparent' 
-                        : isDenied ? 'rgba(239, 68, 68, 0.02)' : 'rgba(34, 197, 94, 0.02)'
+                        : isDenied ? 'rgba(239, 68, 68, 0.02)' : 'rgba(34, 197, 94, 0.02)',
+                      flexShrink: 0,
+                      minHeight: '88px'
                     }}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: 1, paddingRight: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: 1, paddingRight: '1rem', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', flexShrink: 0 }}>
                         <strong style={{ fontSize: '0.98rem', color: 'white' }}>{log.personnel}</strong>
                         <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>({log.role})</span>
                       </div>
                       
-                      <div style={{ fontSize: '0.78rem', color: 'hsl(var(--text-secondary))' }}>
+                      <div style={{ fontSize: '0.78rem', color: 'hsl(var(--text-secondary))', flexShrink: 0 }}>
                         Scan: <span style={{ color: 'white', fontWeight: 500 }}>{log.scanType}</span> • Clearance: <span style={{ color: 'white', fontWeight: 500 }}>{log.clearance}</span>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexShrink: 0 }}>
                         <span style={{ fontSize: '0.72rem', color: 'hsl(var(--text-muted))', fontFamily: 'var(--font-mono)' }}>{log.time}</span>
                         <span className={`badge ${log.undone ? 'badge-muted' : isDenied ? 'badge-danger' : 'badge-success'}`} style={{ fontSize: '0.62rem', padding: '0.15rem 0.45rem' }}>
                           {log.undone ? 'ROLLBACK / UNDONE' : log.status}
@@ -406,7 +408,8 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                           fontWeight: 700,
                           fontSize: '0.68rem',
                           transition: 'all 0.2s ease',
-                          boxShadow: '0 4px 10px rgba(239, 68, 68, 0.05)'
+                          boxShadow: '0 4px 10px rgba(239, 68, 68, 0.05)',
+                          flexShrink: 0
                         }}
                         title="Rollback Access Authorization (Undo Lock Release)"
                       >
