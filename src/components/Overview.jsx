@@ -83,7 +83,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
           </h3>
 
           {/* Vault Asset Value Card (Full Width in left column) */}
-          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: '#0a0d14 / 0.5' }}>
+          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'hsl(var(--bg-secondary))' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <span style={{ fontSize: '0.72rem', color: 'hsl(var(--text-muted))', fontWeight: 700, letterSpacing: '0.04em' }}>VAULT ASSET VALUE</span>
@@ -136,7 +136,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.15rem' }}>
             
             {/* Secure Inventory (Left Sub-card) */}
-            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', background: '#0a0d14 / 0.5' }}>
+            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', background: 'hsl(var(--bg-secondary))' }}>
               <div>
                 <span style={{ fontSize: '0.68rem', color: 'hsl(var(--text-muted))', fontWeight: 700, letterSpacing: '0.04em' }}>SECURE INVENTORY</span>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'hsl(var(--text-primary))', fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
@@ -179,7 +179,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
             </div>
 
             {/* Transaction Volume (Right Sub-card) */}
-            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', background: '#0a0d14 / 0.5' }}>
+            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', background: 'hsl(var(--bg-secondary))' }}>
               <div>
                 <span style={{ fontSize: '0.68rem', color: 'hsl(var(--text-muted))', fontWeight: 700, letterSpacing: '0.04em' }}>TRANSACTION VOLUME</span>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'hsl(var(--text-primary))', fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
@@ -239,7 +239,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between',
-            background: 'rgba(10, 13, 20, 0.3)',
+            background: 'hsl(var(--bg-secondary))',
             padding: '1rem',
             borderRadius: '10px',
             border: '1px solid hsl(var(--border-color))'
@@ -341,7 +341,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center', 
-            background: 'rgba(10, 13, 20, 0.3)',
+            background: 'hsl(var(--bg-secondary))',
             padding: '0.75rem 1rem',
             borderRadius: '8px',
             border: '1px solid hsl(var(--border-color))'
@@ -427,7 +427,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
           <div style={{ 
             flex: 1, 
             height: '200px',
-            background: 'rgba(10, 13, 20, 0.4)',
+            background: 'hsl(var(--bg-secondary))',
             border: '1px solid hsl(var(--border-color))',
             borderRadius: '10px',
             position: 'relative',
