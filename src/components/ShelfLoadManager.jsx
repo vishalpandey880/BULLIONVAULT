@@ -2,22 +2,22 @@ import React, { useState } from 'react';
 import { Weight, Scale, AlertTriangle, ShieldCheck, Zap, RefreshCw, Layers } from 'lucide-react';
 
 export default function ShelfLoadManager() {
-  // 4 shelves, each starts with some initial gold bars (weight = 12.4kg each)
+  // 4 shelves, each starts with some initial gold bars (weight = 1.0kg each in India)
   const [shelves, setShelves] = useState([
-    { id: 1, name: 'Top Shelf (Level 4)', maxLoad: 1500, bars: 40 },   // 496 kg
-    { id: 2, name: 'Upper Shelf (Level 3)', maxLoad: 1800, bars: 95 }, // 1178 kg
-    { id: 3, name: 'Lower Shelf (Level 2)', maxLoad: 2000, bars: 155 }, // 1922 kg
-    { id: 4, name: 'Base Shelf (Level 1)', maxLoad: 2200, bars: 110 }, // 1364 kg
+    { id: 1, name: 'Top Shelf (Level 4)', maxLoad: 500, bars: 400 },   // 400 kg
+    { id: 2, name: 'Upper Shelf (Level 3)', maxLoad: 800, bars: 950 }, // 950 kg (OVERLOADED initially to demonstrate)
+    { id: 3, name: 'Lower Shelf (Level 2)', maxLoad: 1200, bars: 855 }, // 855 kg
+    { id: 4, name: 'Base Shelf (Level 1)', maxLoad: 1500, bars: 1100 }, // 1100 kg
   ]);
 
   const [balancing, setBalancing] = useState(false);
 
-  const barWeight = 12.4; // standard 400 oz gold bar is 12.4 kg
+  const barWeight = 1.0; // standard 1kg gold bar in India
 
   const incrementBars = (id) => {
     setShelves(prev => prev.map(s => {
       if (s.id === id) {
-        return { ...s, bars: s.bars + 5 }; // increment by 5 bars (62 kg)
+        return { ...s, bars: s.bars + 50 }; // increment by 50 bars (50 kg)
       }
       return s;
     }));
@@ -25,8 +25,8 @@ export default function ShelfLoadManager() {
 
   const decrementBars = (id) => {
     setShelves(prev => prev.map(s => {
-      if (s.id === id && s.bars >= 5) {
-        return { ...s, bars: s.bars - 5 };
+      if (s.id === id && s.bars >= 50) {
+        return { ...s, bars: s.bars - 50 };
       }
       return s;
     }));
@@ -151,14 +151,14 @@ export default function ShelfLoadManager() {
                     padding: '1.25rem',
                     animation: isOverloaded ? 'pulse-danger 2s infinite' : 'none',
                     border: isOverloaded ? '1px solid hsl(var(--danger))' : '1px solid hsl(var(--border-color))',
-                    background: isOverloaded ? 'rgba(239, 68, 68, 0.02)' : 'hsl(var(--bg-card) / 0.4)'
+                    background: isOverloaded ? 'hsl(var(--danger) / 0.02)' : 'hsl(var(--bg-card) / 0.4)'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <div>
-                      <strong style={{ fontSize: '1rem', color: 'white' }}>{shelf.name}</strong>
+                      <strong style={{ fontSize: '1rem', color: 'hsl(var(--text-primary))' }}>{shelf.name}</strong>
                       <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.15rem', fontWeight: 500 }}>
-                        Capacity: <span style={{ color: 'white' }}>{shelf.maxLoad} kg</span> • Count: <span style={{ color: 'white' }}>{shelf.bars} bars</span>
+                        Capacity: <span style={{ color: 'hsl(var(--text-primary))' }}>{shelf.maxLoad} kg</span> • Count: <span style={{ color: 'hsl(var(--text-primary))' }}>{shelf.bars} bars</span>
                       </div>
                     </div>
 
@@ -169,14 +169,14 @@ export default function ShelfLoadManager() {
                         className="badge btn-secondary"
                         style={{ padding: '0.3rem 0.6rem', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', borderRadius: '4px' }}
                       >
-                        -5
+                        -50
                       </button>
                       <button 
                         onClick={() => incrementBars(shelf.id)}
                         className="badge btn-secondary"
                         style={{ padding: '0.3rem 0.6rem', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold', borderRadius: '4px' }}
                       >
-                        +5
+                        +50
                       </button>
                     </div>
                   </div>
@@ -184,8 +184,8 @@ export default function ShelfLoadManager() {
                   {/* Weight Gauge */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', marginBottom: '0.35rem' }}>
-                      <span>Current Mass: <strong style={{ color: 'white', fontWeight: 600 }}>{currentWeight.toFixed(1)} kg</strong></span>
-                      <span style={{ color: isOverloaded ? '#f87171' : 'hsl(var(--text-secondary))', fontWeight: 600 }}>
+                      <span>Current Mass: <strong style={{ color: 'hsl(var(--text-primary))', fontWeight: 600 }}>{currentWeight.toFixed(1)} kg</strong></span>
+                      <span style={{ color: isOverloaded ? 'hsl(var(--danger))' : 'hsl(var(--text-secondary))', fontWeight: 600 }}>
                         {loadPercentage.toFixed(0)}% Stressed
                       </span>
                     </div>
@@ -230,20 +230,20 @@ export default function ShelfLoadManager() {
               style={{ 
                 padding: '1.25rem', 
                 borderRadius: '10px', 
-                background: isAnyOverloaded ? 'rgba(239, 68, 68, 0.05)' : 'rgba(34, 197, 94, 0.05)',
-                border: `1px solid ${isAnyOverloaded ? '#ef4444' : '#22c55e'}`,
+                background: isAnyOverloaded ? 'hsl(var(--danger) / 0.05)' : 'hsl(var(--success) / 0.05)',
+                border: `1px solid ${isAnyOverloaded ? 'hsl(var(--danger))' : 'hsl(var(--success))'}`,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1.15rem'
               }}
             >
               {isAnyOverloaded ? (
-                <AlertTriangle size={36} style={{ color: '#ef4444', animation: 'pulse-light 1.5s infinite', padding: '6px', background: 'rgba(239, 68, 68, 0.12)', borderRadius: '50%', border: '1px solid rgba(239,68,68,0.25)' }} />
+                <AlertTriangle size={36} style={{ color: 'hsl(var(--danger))', animation: 'pulse-light 1.5s infinite', padding: '6px', background: 'hsl(var(--danger) / 0.12)', borderRadius: '50%', border: '1px solid hsl(var(--danger) / 0.25)' }} />
               ) : (
-                <ShieldCheck size={36} style={{ color: '#22c55e', padding: '6px', background: 'rgba(34, 197, 94, 0.12)', borderRadius: '50%', border: '1px solid rgba(34,197,94,0.25)' }} />
+                <ShieldCheck size={36} style={{ color: 'hsl(var(--success))', padding: '6px', background: 'hsl(var(--success) / 0.12)', borderRadius: '50%', border: '1px solid hsl(var(--success) / 0.25)' }} />
               )}
               <div>
-                <h4 style={{ fontSize: '1.05rem', color: isAnyOverloaded ? '#f87171' : '#4ade80', fontWeight: 700 }}>
+                <h4 style={{ fontSize: '1.05rem', color: isAnyOverloaded ? 'hsl(var(--danger))' : 'hsl(var(--success))', fontWeight: 700 }}>
                   {isAnyOverloaded ? 'WARNING: STRUCTURAL OVERLOAD' : 'UNIT STABILITY: NOMINAL'}
                 </h4>
                 <p style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', marginTop: '0.2rem', lineHeight: '1.4' }}>
@@ -258,15 +258,15 @@ export default function ShelfLoadManager() {
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                 <span style={{ color: 'hsl(var(--text-secondary))' }}>Total Gold Bars Loaded:</span>
-                <strong style={{ color: 'white' }}>{totalBarsInUnit} bars</strong>
+                <strong style={{ color: 'hsl(var(--text-primary))' }}>{totalBarsInUnit} bars</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                 <span style={{ color: 'hsl(var(--text-secondary))' }}>Total Mass on Rack:</span>
-                <strong style={{ color: 'white' }}>{totalWeightInUnit.toLocaleString(undefined, { maximumFractionDigits: 1 })} kg</strong>
+                <strong style={{ color: 'hsl(var(--text-primary))' }}>{totalWeightInUnit.toLocaleString(undefined, { maximumFractionDigits: 1 })} kg</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                 <span style={{ color: 'hsl(var(--text-secondary))' }}>Unit Safety Margin Factor:</span>
-                <strong style={{ color: isAnyOverloaded ? '#f87171' : '#4ade80' }}>
+                <strong style={{ color: isAnyOverloaded ? 'hsl(var(--danger))' : 'hsl(var(--success))' }}>
                   {isAnyOverloaded ? '0.74 (CRITICAL RISK)' : '1.38 (NOMINAL STABLE)'}
                 </strong>
               </div>
@@ -274,7 +274,7 @@ export default function ShelfLoadManager() {
 
             {/* Center of Gravity analysis visualization */}
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.25rem' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'white', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'hsl(var(--text-primary))', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                 <Weight size={14} style={{ color: 'hsl(var(--gold-primary))' }} />
                 CENTER OF GRAVITY MONITOR
               </div>
@@ -294,14 +294,14 @@ export default function ShelfLoadManager() {
               }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '0.72rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>METRIC COG HEIGHT</div>
-                  <div style={{ fontSize: '0.92rem', fontWeight: 750, color: isCenterOfGravityHigh ? '#f87171' : '#4ade80', marginTop: '0.15rem' }}>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 750, color: isCenterOfGravityHigh ? 'hsl(var(--danger))' : 'hsl(var(--success))', marginTop: '0.15rem' }}>
                     {centerOfGravityIndex.toFixed(2)} Index (L{centerOfGravityIndex.toFixed(0)})
                   </div>
                 </div>
                 <div className="badge" style={{ 
-                  background: isCenterOfGravityHigh ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)', 
-                  color: isCenterOfGravityHigh ? '#f87171' : '#4ade80',
-                  borderColor: isCenterOfGravityHigh ? 'rgba(239, 68, 68, 0.25)' : 'rgba(34, 197, 94, 0.25)',
+                  background: isCenterOfGravityHigh ? 'hsl(var(--danger) / 0.12)' : 'hsl(var(--success) / 0.12)', 
+                  color: isCenterOfGravityHigh ? 'hsl(var(--danger))' : 'hsl(var(--success))',
+                  borderColor: isCenterOfGravityHigh ? 'hsl(var(--danger) / 0.25)' : 'hsl(var(--success) / 0.25)',
                   fontSize: '0.62rem'
                 }}>
                   {isCenterOfGravityHigh ? 'HIGH HEAVY (RISK)' : 'STABLE BASE (SECURE)'}

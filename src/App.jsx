@@ -10,7 +10,9 @@ import {
   Globe,
   Calendar,
   DollarSign,
-  Compass
+  Compass,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 // Import Feature Components
@@ -20,42 +22,61 @@ import AccessLog from './components/AccessLog';
 import Logistics from './components/Logistics';
 import CustomsChecker from './components/CustomsChecker';
 import ShelfLoadManager from './components/ShelfLoadManager';
+import LandingPage from './components/LandingPage';
 
 const INITIAL_GOLD_BARS = [
-  { serialNumber: 'VAL-88219B', purity: '99.99', refinery: 'Valcambi', weight: 12.4, palletId: 'PALLET-01' },
-  { serialNumber: 'VAL-88220C', purity: '99.99', refinery: 'Valcambi', weight: 12.4, palletId: 'PALLET-01' },
-  { serialNumber: 'RND-44210A', purity: '99.95', refinery: 'Rand Refinery', weight: 12.4, palletId: 'PALLET-02' },
-  { serialNumber: 'PRT-90021A', purity: '99.99', refinery: 'Perth Mint', weight: 12.4, palletId: 'PALLET-03' },
-  { serialNumber: 'RCM-50029X', purity: '99.90', refinery: 'Royal Canadian Mint', weight: 12.5, palletId: 'PALLET-04' },
+  { serialNumber: 'MMTC-88219B', purity: '99.99', refinery: 'MMTC-PAMP', weight: 1.0, palletId: 'PALLET-01' }, // 1kg bars are standard in India
+  { serialNumber: 'MMTC-88220C', purity: '99.99', refinery: 'MMTC-PAMP', weight: 1.0, palletId: 'PALLET-01' },
+  { serialNumber: 'KUN-44210A', purity: '99.95', refinery: 'Kundan Refinery', weight: 1.0, palletId: 'PALLET-02' },
+  { serialNumber: 'BAN-90021A', purity: '99.99', refinery: 'Bangalore Refinery', weight: 1.0, palletId: 'PALLET-03' },
+  { serialNumber: 'AUG-50029X', purity: '99.90', refinery: 'Augmont Gold', weight: 1.0, palletId: 'PALLET-04' },
 ];
 
 const INITIAL_ACCESS_LOGS = [
-  { id: 'log-1', time: '14:22:10', personnel: 'Director Marcus Vance', role: 'Security Chief', clearance: 'Level 5 (Super)', scanType: 'Retinal Scan', status: 'GRANTED / AUTHORIZED', undone: false, color: 'success' },
-  { id: 'log-2', time: '13:05:41', personnel: 'Guard Jameson Kael', role: 'Armored Truck Escort', clearance: 'Level 2 (Transit)', scanType: 'Fingerprint', status: 'GRANTED / AUTHORIZED', undone: false, color: 'success' },
+  { id: 'log-1', time: '14:22:10', personnel: 'Director Vikram Singh', role: 'Security Chief', clearance: 'Level 5 (Super)', scanType: 'Retinal Scan', status: 'GRANTED / AUTHORIZED', undone: false, color: 'success' },
+  { id: 'log-2', time: '13:05:41', personnel: 'Guard Arjun Patel', role: 'Armored Truck Escort', clearance: 'Level 2 (Transit)', scanType: 'Fingerprint', status: 'GRANTED / AUTHORIZED', undone: false, color: 'success' },
   { id: 'log-3', time: '11:15:00', personnel: 'Unknown Intruder', role: 'Unauthorized Personnel', clearance: 'None', scanType: 'Fingerprint', status: 'DENIED / BREACH ALERT', undone: false, color: 'danger' },
 ];
 
 const INITIAL_TRANSPORT_REQUESTS = [
-  { id: 'tr-1', origin: 'Paris', destination: 'Zurich', time: '2026-06-09T08:00', barCount: 40, escort: 'MAXIMUM', status: 'READY FOR TRANSIT' },
-  { id: 'tr-2', origin: 'London', destination: 'Brussels', time: '2026-06-10T14:30', barCount: 15, escort: 'HIGH', status: 'PENDING DISPATCH' },
-  { id: 'tr-3', origin: 'Zurich', destination: 'Frankfurt', time: '2026-06-12T10:00', barCount: 80, escort: 'MAXIMUM', status: 'SCHEDULING ESCORT' },
+  { id: 'tr-1', origin: 'Mumbai', destination: 'Delhi', time: '2026-06-09T08:00', barCount: 40, escort: 'MAXIMUM', status: 'READY FOR TRANSIT' },
+  { id: 'tr-2', origin: 'Chennai', destination: 'Bangalore', time: '2026-06-10T14:30', barCount: 15, escort: 'HIGH', status: 'PENDING DISPATCH' },
+  { id: 'tr-3', origin: 'Delhi', destination: 'Kolkata', time: '2026-06-12T10:00', barCount: 80, escort: 'MAXIMUM', status: 'SCHEDULING ESCORT' },
 ];
 
 function App() {
+  const [showLanding, setShowLanding] = useState(true);
+  const [theme, setTheme] = useState('dark');
   const [activeTab, setActiveTab] = useState('overview');
+  
   const [goldBars, setGoldBars] = useState(INITIAL_GOLD_BARS);
   const [accessLogs, setAccessLogs] = useState(INITIAL_ACCESS_LOGS);
   const [transportRequests, setTransportRequests] = useState(INITIAL_TRANSPORT_REQUESTS);
-  const [marketPrice, setMarketPrice] = useState(2350.50); // initial spot price per oz
   
-  // Real-time ticking UTC clock
+  // Real market price simulation (Approx ₹71,000 per 10g => ₹7,100,000 per kg)
+  const [marketPrice, setMarketPrice] = useState(7100000); 
+  
+  // Apply theme to body
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light');
+    } else {
+      document.body.classList.remove('light');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  // Real-time ticking IST clock
   const [timeString, setTimeString] = useState('');
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
-      const hrs = String(now.getUTCHours()).padStart(2, '0');
-      const mins = String(now.getUTCMinutes()).padStart(2, '0');
-      const secs = String(now.getUTCSeconds()).padStart(2, '0');
+      const hrs = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const secs = String(now.getSeconds()).padStart(2, '0');
       setTimeString(`${hrs}:${mins}:${secs}`);
     };
     updateClock();
@@ -63,12 +84,13 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Simulate market price fluctuations slightly
+  // Simulate market price fluctuations slightly (in INR)
   useEffect(() => {
     const interval = setInterval(() => {
       setMarketPrice(prev => {
-        const delta = (Math.random() * 4 - 2);
-        return parseFloat((prev + delta).toFixed(2));
+        // Fluctuate by ₹100 to ₹500 per kg randomly
+        const delta = (Math.random() * 1000 - 500);
+        return Math.floor(prev + delta);
       });
     }, 5000);
     return () => clearInterval(interval);
@@ -97,10 +119,19 @@ function App() {
   };
 
   // Compute stats
-  const totalWeight = goldBars.reduce((sum, b) => sum + b.weight, 0);
-  const totalValue = totalWeight * 32.1507 * marketPrice;
+  const totalWeight = goldBars.reduce((sum, b) => sum + b.weight, 0); // in kg
+  const totalValue = totalWeight * marketPrice; // Market price is per kg now
 
-  // Render content based on sidebar tab (Splitting components cleanly by viewMode)
+  // Format currency in Indian format
+  const formatINR = (value) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  // Render content based on sidebar tab
   const renderContent = () => {
     switch(activeTab) {
       case 'overview':
@@ -136,6 +167,7 @@ function App() {
             transportRequests={transportRequests} 
             onAddTransportRequest={addTransportRequest} 
             viewMode="organizer"
+            theme={theme}
           />
         );
       case 'customs':
@@ -158,6 +190,7 @@ function App() {
             transportRequests={transportRequests} 
             onAddTransportRequest={addTransportRequest} 
             viewMode="route"
+            theme={theme}
           />
         );
       case 'shelves':
@@ -180,7 +213,7 @@ function App() {
       background: isActive ? 'linear-gradient(90deg, hsl(var(--gold-primary) / 0.1) 0%, transparent 100%)' : 'transparent',
       border: 'none',
       borderLeft: isActive ? '3px solid hsl(var(--gold-primary))' : '3px solid transparent',
-      color: isActive ? 'white' : 'hsl(var(--text-secondary))',
+      color: isActive ? 'hsl(var(--text-primary))' : 'hsl(var(--text-secondary))',
       borderRadius: '0 6px 6px 0',
       fontWeight: isActive ? 600 : 400,
       textAlign: 'left',
@@ -193,13 +226,17 @@ function App() {
   // Compute active alerts
   const alertCount = accessLogs.filter(l => !l.undone && l.status.includes('DENIED')).length;
 
+  if (showLanding) {
+    return <LandingPage onEnter={() => setShowLanding(false)} />;
+  }
+
   return (
     <div className="app-container">
       
       {/* Top Status Ribbon (First Level) */}
       <div style={{
-        height: '40px',
-        backgroundColor: '#0a0d14',
+        height: '45px',
+        backgroundColor: 'hsl(var(--bg-card))',
         borderBottom: '1px solid hsl(var(--border-color))',
         display: 'flex',
         alignItems: 'center',
@@ -208,25 +245,43 @@ function App() {
         fontSize: '0.78rem',
         color: 'hsl(var(--text-secondary))',
         fontWeight: 500,
-        zIndex: 20
+        zIndex: 20,
+        transition: 'all 0.3s ease'
       }}>
         {/* Left Side Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Shield size={16} style={{ color: 'hsl(var(--gold-primary))' }} />
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '0.06em', color: 'white' }}>
+          <Shield size={18} style={{ color: 'hsl(var(--gold-primary))' }} />
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '0.06em', color: 'hsl(var(--text-primary))', fontSize: '0.9rem' }}>
             AURUMSEC
           </span>
           <span style={{ color: 'hsl(var(--text-muted))' }}>|</span>
           <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.72rem', fontWeight: 600 }}>
-            Vault Management System
+            India Node
           </span>
         </div>
 
-        {/* Right Side Clock/Log */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontFamily: 'var(--font-mono)' }}>
-          <span>Logged: <strong style={{ color: 'hsl(var(--gold-primary))' }}>OPERATOR A77</strong> (ACTIVE)</span>
-          <span style={{ color: 'hsl(var(--text-muted))' }}>-</span>
-          <span style={{ color: 'white', fontWeight: 600 }}>{timeString} UTC</span>
+        {/* Right Side Clock/Log/Theme */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', fontFamily: 'var(--font-mono)' }}>
+          <span>Logged: <strong style={{ color: 'hsl(var(--gold-primary))' }}>OPERATOR A77</strong></span>
+          <span style={{ color: 'hsl(var(--text-primary))', fontWeight: 600 }}>{timeString} IST</span>
+          
+          <button 
+            onClick={toggleTheme}
+            style={{
+              background: 'transparent',
+              border: '1px solid hsl(var(--border-color))',
+              color: 'hsl(var(--text-primary))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.4rem',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+            title="Toggle Light/Dark Mode"
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
         </div>
       </div>
 
@@ -283,12 +338,12 @@ function App() {
           {/* Sidebar Spot Valuation footer */}
           <div style={{ borderTop: '1px solid hsl(var(--border-color))', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'hsl(var(--text-muted))' }}>
-              <span>SPOT GOLD</span>
-              <span style={{ color: 'hsl(var(--gold-primary))', fontWeight: 'bold' }}>${marketPrice.toFixed(2)}/oz</span>
+              <span>SPOT (1KG)</span>
+              <span style={{ color: 'hsl(var(--gold-primary))', fontWeight: 'bold' }}>{formatINR(marketPrice)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'hsl(var(--text-muted))' }}>
               <span>NET WORTH</span>
-              <span style={{ color: 'white', fontWeight: 'bold' }}>${(totalValue / 1e6).toFixed(2)}M</span>
+              <span style={{ color: 'hsl(var(--text-primary))', fontWeight: 'bold' }}>{formatINR(totalValue)}</span>
             </div>
           </div>
 
@@ -315,7 +370,7 @@ function App() {
               fontFamily: 'var(--font-display)', 
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
-              color: 'white'
+              color: 'hsl(var(--text-primary))'
             }}>
               {activeTab === 'overview' && 'Global Vault Status Hub'}
               {activeTab === 'registry' && 'Gold Bar Detail View'}
@@ -339,7 +394,7 @@ function App() {
                 fontSize: '0.62rem', 
                 padding: '0.2rem 0.5rem', 
                 background: alertCount > 0 ? 'hsl(var(--danger) / 0.1)' : 'hsl(var(--text-muted) / 0.08)',
-                color: alertCount > 0 ? '#f87171' : 'hsl(var(--text-muted))',
+                color: alertCount > 0 ? 'hsl(var(--danger))' : 'hsl(var(--text-muted))',
                 border: alertCount > 0 ? '1px solid hsl(var(--danger) / 0.2)' : '1px solid hsl(var(--border-color))'
               }}>
                 ALERTS: {alertCount}

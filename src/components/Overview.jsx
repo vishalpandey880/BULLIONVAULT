@@ -13,7 +13,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
 
   // Computed values from real state data
   const registryTotalWeight = goldBars.reduce((sum, b) => sum + b.weight, 0);
-  const registryTotalValue = registryTotalWeight * 32.1507 * marketPrice;
+  const registryTotalValue = registryTotalWeight * marketPrice;
 
   // Simulate progress bar fluctuation slightly to make it look alive
   useEffect(() => {
@@ -87,12 +87,12 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <span style={{ fontSize: '0.72rem', color: 'hsl(var(--text-muted))', fontWeight: 700, letterSpacing: '0.04em' }}>VAULT ASSET VALUE</span>
-                <div style={{ fontSize: '1.85rem', fontWeight: 800, color: 'white', fontFamily: 'var(--font-display)', marginTop: '0.2rem' }} className="title-neon">
-                  $14.78 BILLION
+                <div style={{ fontSize: '1.85rem', fontWeight: 800, color: 'hsl(var(--text-primary))', fontFamily: 'var(--font-display)', marginTop: '0.2rem' }} className="title-neon">
+                  ₹14,780 Cr
                 </div>
                 {/* Small indicator of live active registry */}
                 <div style={{ fontSize: '0.68rem', color: 'hsl(var(--text-muted))', marginTop: '0.15rem' }}>
-                  Registry Deposit: <span style={{ color: 'hsl(var(--gold-primary))', fontWeight: 650 }}>${(registryTotalValue / 1e6).toFixed(2)}M</span>
+                  Registry Deposit: <span style={{ color: 'hsl(var(--gold-primary))', fontWeight: 650 }}>₹{(registryTotalValue / 1e7).toFixed(2)}Cr</span>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'hsl(var(--gold-primary))', fontSize: '0.75rem', fontWeight: 600 }}>
@@ -139,11 +139,11 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', background: '#0a0d14 / 0.5' }}>
               <div>
                 <span style={{ fontSize: '0.68rem', color: 'hsl(var(--text-muted))', fontWeight: 700, letterSpacing: '0.04em' }}>SECURE INVENTORY</span>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'white', fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'hsl(var(--text-primary))', fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
                   4,128 BARS
                 </div>
                 <div style={{ fontSize: '0.62rem', color: 'hsl(var(--text-muted))', marginTop: '0.1rem' }}>
-                  Ledger active: <span style={{ color: 'white' }}>{goldBars.length} Bars</span>
+                  Ledger active: <span style={{ color: 'hsl(var(--text-primary))' }}>{goldBars.length} Bars</span>
                 </div>
               </div>
 
@@ -182,11 +182,11 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', background: '#0a0d14 / 0.5' }}>
               <div>
                 <span style={{ fontSize: '0.68rem', color: 'hsl(var(--text-muted))', fontWeight: 700, letterSpacing: '0.04em' }}>TRANSACTION VOLUME</span>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'white', fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
-                  $24.5M (24H)
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'hsl(var(--text-primary))', fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
+                  ₹24.5 Cr (24H)
                 </div>
                 <div style={{ fontSize: '0.62rem', color: 'hsl(var(--text-muted))', marginTop: '0.1rem' }}>
-                  Active queue: <span style={{ color: 'white' }}>{transportRequests.length} Transits</span>
+                  Active queue: <span style={{ color: 'hsl(var(--text-primary))' }}>{transportRequests.length} Transits</span>
                 </div>
               </div>
 
@@ -229,7 +229,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
             <span style={{ fontSize: '0.65rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>TERMINAL METADATA</span>
-            <div style={{ fontSize: '0.88rem', color: 'white', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: '0.88rem', color: 'hsl(var(--text-primary))', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
               ACCESS TERMINAL: <span style={{ color: 'hsl(var(--gold-primary))' }}>VT-4A - {scanStatus}</span>
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
                 borderRadius: '4px',
                 fontSize: '0.65rem',
                 fontFamily: 'var(--font-mono)',
-                color: 'white',
+                color: 'hsl(var(--text-primary))',
                 fontWeight: 'bold'
               }}>
                 {scanProgress}%
@@ -326,11 +326,11 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid hsl(var(--border-color) / 0.4)', paddingBottom: '0.2rem' }}>
                 <span style={{ fontSize: '0.68rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>OPERATOR ID</span>
-                <span style={{ fontSize: '0.72rem', color: 'white', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>A77-DLY</span>
+                <span style={{ fontSize: '0.72rem', color: 'hsl(var(--text-primary))', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>A77-DLY</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.68rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>BIOMETRIC LEVEL</span>
-                <span style={{ fontSize: '0.72rem', color: 'white', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>ALPHA-1</span>
+                <span style={{ fontSize: '0.72rem', color: 'hsl(var(--text-primary))', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>ALPHA-1</span>
               </div>
             </div>
 
@@ -352,7 +352,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
             </div>
             
             {/* Ticking countdown timer */}
-            <div style={{ fontSize: '0.85rem', color: 'white', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: '0.85rem', color: 'hsl(var(--text-primary))', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
               {scanTime}
             </div>
           </div>
@@ -367,7 +367,7 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid hsl(var(--border-color))', paddingBottom: '0.65rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: '0.65rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>TACTICAL RADAR OVERLAY (SVG ROUTE MAPPING)</span>
-            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'white', fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'hsl(var(--text-primary))', fontFamily: 'var(--font-display)', marginTop: '0.15rem' }}>
               VAULT ZONE 7 - SECURE PATHS
             </h3>
           </div>
@@ -417,57 +417,103 @@ export default function Overview({ goldBars, accessLogs, transportRequests, mark
               width: '6px',
               height: '6px',
               borderRadius: '50%',
-              background: 'white',
+              background: 'hsl(var(--text-primary))',
               boxShadow: '0 0 8px white',
               zIndex: 3
             }} />
           </div>
 
-          {/* Right: Vector Blueprint Map Layout (SVG corridors) */}
+          {/* Right: Vector Blueprint Map Layout (Full Room View) */}
           <div style={{ 
             flex: 1, 
-            height: '180px', 
-            background: 'rgba(10, 13, 20, 0.2)',
+            height: '200px',
+            background: 'rgba(10, 13, 20, 0.4)',
             border: '1px solid hsl(var(--border-color))',
             borderRadius: '10px',
             position: 'relative',
             overflow: 'hidden'
-          }} className="radar-grid">
-            <svg style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-              {/* Corridor corridor paths lines (Neon Gold) */}
-              <g stroke="hsl(var(--gold-primary) / 0.3)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none">
-                {/* Vault Entrance -> Main Isle -> Guard Station -> Exit Point */}
-                <path d="M 60 90 L 150 90 L 150 50 L 290 50 L 290 90 L 360 90" />
-                {/* Branches */}
-                <path d="M 150 90 L 150 140 L 290 140 L 290 90" />
-                <path d="M 230 50 L 230 140" />
+          }}>
+            <svg style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} viewBox="0 0 400 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                {/* Hexagon Pattern */}
+                <pattern id="hex" x="0" y="0" width="24" height="41.5" patternUnits="userSpaceOnUse">
+                  <path d="M12 0 L24 7 L24 20 L12 27 L0 20 L0 7 Z" fill="none" stroke="hsl(var(--border-color) / 0.3)" strokeWidth="0.5" />
+                  <path d="M12 41.5 L24 34.5 L24 20 L12 27 L0 20 L0 34.5 Z" fill="none" stroke="hsl(var(--border-color) / 0.3)" strokeWidth="0.5" />
+                </pattern>
+                {/* Arrowhead Marker */}
+                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--gold-primary))" />
+                </marker>
+                {/* Glow Filter */}
+                <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="2" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+
+              {/* Background Hex Grid */}
+              <rect width="100%" height="100%" fill="url(#hex)" />
+
+              {/* Architectural Rooms (Filled Polygons) */}
+              <g fill="hsl(var(--gold-primary) / 0.15)" stroke="hsl(var(--gold-primary) / 0.6)" strokeWidth="1.5">
+                {/* Entrance Corridor */}
+                <rect x="-10" y="75" width="90" height="30" />
+                <rect x="20" y="115" width="40" height="30" /> {/* Side room */}
+                {/* Main Isle Vertical */}
+                <rect x="80" y="30" width="40" height="120" />
+                <rect x="30" y="30" width="40" height="30" /> {/* Top left room */}
+                {/* Guard Station Complex */}
+                <rect x="120" y="40" width="70" height="40" />
+                <rect x="190" y="20" width="50" height="40" /> {/* Upper right room */}
+                {/* Storage Unit 4 Complex */}
+                <rect x="120" y="100" width="90" height="50" />
+                <rect x="210" y="130" width="60" height="30" /> {/* Bottom right room */}
+                {/* Exit Point Area */}
+                <rect x="230" y="60" width="80" height="60" />
+                <rect x="310" y="75" width="50" height="30" /> {/* Exit tunnel */}
               </g>
 
-              {/* Glowing active path line on top */}
-              <g stroke="hsl(var(--gold-primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" filter="drop-shadow(0 0 2px hsl(var(--gold-primary) / 0.6))">
-                <path d="M 60 90 L 150 90 L 150 50 L 290 50 L 290 90 L 360 90" style={{ strokeDasharray: '8, 8', animation: 'scan-line 3s linear infinite' }} />
+              {/* Internal Walls/Details */}
+              <g stroke="hsl(var(--gold-primary) / 0.4)" strokeWidth="1">
+                <line x1="100" y1="30" x2="100" y2="150" strokeDasharray="4 2" />
+                <line x1="155" y1="40" x2="155" y2="80" />
+                <line x1="155" y1="100" x2="155" y2="150" />
+                <line x1="270" y1="60" x2="270" y2="120" />
               </g>
 
-              {/* Labeled City/Corridor Nodes */}
+              {/* Tactical Movement Path (Arrows) */}
+              <g stroke="hsl(var(--gold-primary))" strokeWidth="2.5" fill="none" markerEnd="url(#arrow)" filter="url(#neon-glow)">
+                {/* Main Path */}
+                <path d="M -5 90 L 100 90 L 100 60 L 140 60" />
+                <path d="M 170 60 L 250 60 L 250 90 L 320 90" />
+                <path d="M 100 90 L 100 125 L 150 125" />
+              </g>
+
+              {/* Node Markers & Labels */}
               {/* Vault Entrance */}
-              <circle cx="60" cy="90" r="5" fill="white" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
-              <text x="60" y="112" fill="hsl(var(--text-secondary))" fontSize="9px" fontWeight="bold" textAnchor="middle">VAULT ENTRANCE (V7-ENT)</text>
+              <circle cx="40" cy="90" r="4" fill="hsl(var(--bg-card))" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
+              <circle cx="40" cy="90" r="1.5" fill="hsl(var(--gold-primary))" />
+              <text x="40" y="112" fill="hsl(var(--text-secondary))" fontSize="8px" fontWeight="bold" textAnchor="middle">V7-ENT</text>
 
-              {/* Main Isle */}
-              <circle cx="150" cy="50" r="5" fill="white" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
-              <text x="150" y="36" fill="hsl(var(--text-secondary))" fontSize="9px" fontWeight="bold" textAnchor="middle">MAIN ISLE</text>
+              {/* Main Isle Node */}
+              <circle cx="100" cy="90" r="4" fill="hsl(var(--bg-card))" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
+              <circle cx="100" cy="90" r="1.5" fill="hsl(var(--gold-primary))" />
+              <text x="100" y="24" fill="hsl(var(--text-secondary))" fontSize="8px" fontWeight="bold" textAnchor="middle">MAIN ISLE</text>
 
-              {/* Guard Station */}
-              <circle cx="230" cy="50" r="5" fill="white" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
-              <text x="230" y="36" fill="hsl(var(--text-secondary))" fontSize="9px" fontWeight="bold" textAnchor="middle">GUARD STATION</text>
+              {/* Guard Station Node */}
+              <circle cx="155" cy="60" r="4" fill="hsl(var(--bg-card))" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
+              <circle cx="155" cy="60" r="1.5" fill="hsl(var(--gold-primary))" />
+              <text x="155" y="36" fill="hsl(var(--text-primary))" fontSize="8px" fontWeight="bold" textAnchor="middle">GUARD STATION</text>
 
-              {/* Storage Unit 4 */}
-              <circle cx="290" cy="140" r="5" fill="white" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
-              <text x="290" y="156" fill="hsl(var(--text-secondary))" fontSize="9px" fontWeight="bold" textAnchor="middle">STORAGE UNIT 4 (S4-B2)</text>
+              {/* Storage Unit 4 Node */}
+              <circle cx="160" cy="125" r="4" fill="hsl(var(--bg-card))" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
+              <circle cx="160" cy="125" r="1.5" fill="hsl(var(--gold-primary))" />
+              <text x="175" y="128" fill="hsl(var(--text-primary))" fontSize="8px" fontWeight="bold">STORAGE S4-B2</text>
 
-              {/* Exit Point */}
-              <circle cx="360" cy="90" r="5" fill="white" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
-              <text x="360" y="112" fill="hsl(var(--text-secondary))" fontSize="9px" fontWeight="bold" textAnchor="middle">EXIT POINT</text>
+              {/* Exit Point Node */}
+              <circle cx="270" cy="90" r="4" fill="hsl(var(--bg-card))" stroke="hsl(var(--gold-primary))" strokeWidth="2" />
+              <circle cx="270" cy="90" r="1.5" fill="hsl(var(--gold-primary))" />
+              <text x="270" y="105" fill="hsl(var(--text-primary))" fontSize="8px" fontWeight="bold" textAnchor="middle">EXIT POINT</text>
             </svg>
           </div>
 

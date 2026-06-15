@@ -9,8 +9,8 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
   // Form State
   const [serialNumber, setSerialNumber] = useState('');
   const [purity, setPurity] = useState('99.99');
-  const [refinery, setRefinery] = useState('Valcambi');
-  const [weight, setWeight] = useState('12.4'); // Standard 400 oz bar is approx 12.4 kg
+  const [refinery, setRefinery] = useState('MMTC-PAMP');
+  const [weight, setWeight] = useState('1.0'); // Standard 1 kg bar in India
   const [palletId, setPalletId] = useState('PALLET-01');
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
@@ -18,6 +18,15 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
   // Extract unique purities and refineries for filter dropdowns
   const uniquePurities = [...new Set(goldBars.map(bar => bar.purity))].sort();
   const uniqueRefineries = [...new Set(goldBars.map(bar => bar.refinery))].sort();
+
+  // Format currency in Indian format
+  const formatINR = (value) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(value);
+  };
 
   // Handler to add a bar
   const handleSubmit = (e) => {
@@ -68,7 +77,7 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
   // Calculate pallet valuations and rank them
   const pallets = {};
   goldBars.forEach(bar => {
-    const value = bar.weight * 32.1507 * marketPrice; // Convert kg to oz and multiply by price
+    const value = bar.weight * marketPrice; // Market price is per kg now
     if (!pallets[bar.palletId]) {
       pallets[bar.palletId] = {
         id: bar.palletId,
@@ -109,7 +118,7 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
               type="text" 
               value={serialNumber} 
               onChange={(e) => setSerialNumber(e.target.value)} 
-              placeholder="e.g. VAL-88221D" 
+              placeholder="e.g. MMTC-88221D" 
               required
             />
           </div>
@@ -128,12 +137,12 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
           <div style={{ flex: 1, minWidth: '160px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', fontWeight: 500 }}>Origin Refinery</label>
             <select value={refinery} onChange={(e) => setRefinery(e.target.value)}>
-              <option value="Valcambi">Valcambi (Switzerland)</option>
-              <option value="PAMP Suisse">PAMP Suisse (Switzerland)</option>
-              <option value="Argor-Heraeus">Argor-Heraeus (Switzerland)</option>
-              <option value="Rand Refinery">Rand Refinery (South Africa)</option>
-              <option value="Perth Mint">Perth Mint (Australia)</option>
-              <option value="Royal Canadian Mint">Royal Canadian Mint (Canada)</option>
+              <option value="MMTC-PAMP">MMTC-PAMP (India)</option>
+              <option value="Kundan Refinery">Kundan Refinery (India)</option>
+              <option value="Bangalore Refinery">Bangalore Refinery (India)</option>
+              <option value="Augmont Gold">Augmont Gold (India)</option>
+              <option value="Emerald Jewel Industry">Emerald Jewel Industry (India)</option>
+              <option value="BRPL">BRPL (India)</option>
             </select>
           </div>
           <div style={{ flex: 1, minWidth: '160px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -143,7 +152,7 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
               step="0.01"
               value={weight} 
               onChange={(e) => setWeight(e.target.value)} 
-              placeholder="12.4" 
+              placeholder="1.0" 
               required
             />
           </div>
@@ -160,8 +169,8 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
           </select>
         </div>
 
-        {formError && <div style={{ color: '#f87171', fontSize: '0.82rem', fontWeight: 500 }}>{formError}</div>}
-        {formSuccess && <div style={{ color: '#4ade80', fontSize: '0.82rem', fontWeight: 500 }}>{formSuccess}</div>}
+        {formError && <div style={{ color: 'hsl(var(--danger))', fontSize: '0.82rem', fontWeight: 500 }}>{formError}</div>}
+        {formSuccess && <div style={{ color: 'hsl(var(--success))', fontSize: '0.82rem', fontWeight: 500 }}>{formSuccess}</div>}
 
         <button 
           type="submit" 
@@ -219,16 +228,16 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontSize: '0.8rem', color: 'hsl(var(--gold-primary))', fontWeight: 'bold' }}>#{index + 1}</span>
-                    <strong style={{ fontSize: '0.95rem', color: 'white' }}>{pallet.id}</strong>
+                    <strong style={{ fontSize: '0.95rem', color: 'hsl(var(--text-primary))' }}>{pallet.id}</strong>
                   </div>
-                  <div style={{ fontSize: '0.92rem', fontWeight: 750, color: 'white' }}>
-                    ${pallet.totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  <div style={{ fontSize: '0.92rem', fontWeight: 750, color: 'hsl(var(--text-primary))' }}>
+                    {formatINR(pallet.totalValue)}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'hsl(var(--text-secondary))' }}>
-                  <span>Capacity: <strong style={{ color: 'white' }}>{pallet.barCount} Bars</strong></span>
-                  <span>Weight: <strong style={{ color: 'white' }}>{pallet.totalWeight.toFixed(1)} kg</strong></span>
+                  <span>Capacity: <strong style={{ color: 'hsl(var(--text-primary))' }}>{pallet.barCount} Bars</strong></span>
+                  <span>Weight: <strong style={{ color: 'hsl(var(--text-primary))' }}>{pallet.totalWeight.toFixed(1)} kg</strong></span>
                 </div>
 
                 {/* Progress Bar for relative valuation */}
@@ -302,7 +311,7 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
               <th style={{ padding: '1rem 0.85rem', fontWeight: 700, letterSpacing: '0.02em', fontSize: '0.78rem' }}>ORIGIN REFINERY</th>
               <th style={{ padding: '1rem 0.85rem', fontWeight: 700, letterSpacing: '0.02em', fontSize: '0.78rem' }}>WEIGHT</th>
               <th style={{ padding: '1rem 0.85rem', fontWeight: 700, letterSpacing: '0.02em', fontSize: '0.78rem' }}>LOCATION</th>
-              <th style={{ padding: '1rem 0.85rem', fontWeight: 700, letterSpacing: '0.02em', fontSize: '0.78rem', textAlign: 'right' }}>VALUATION (USD)</th>
+              <th style={{ padding: '1rem 0.85rem', fontWeight: 700, letterSpacing: '0.02em', fontSize: '0.78rem', textAlign: 'right' }}>VALUATION (INR)</th>
             </tr>
           </thead>
           <tbody>
@@ -314,10 +323,10 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
               </tr>
             ) : (
               filteredBars.map((bar) => {
-                const val = bar.weight * 32.1507 * marketPrice;
+                const val = bar.weight * marketPrice;
                 return (
                   <tr key={bar.serialNumber} style={{ transition: 'all 0.2s' }} className="registry-row">
-                    <td style={{ padding: '1.1rem 0.85rem', fontWeight: 750, fontFamily: 'var(--font-display)', color: 'white', fontSize: '0.95rem' }}>
+                    <td style={{ padding: '1.1rem 0.85rem', fontWeight: 750, fontFamily: 'var(--font-display)', color: 'hsl(var(--text-primary))', fontSize: '0.95rem' }}>
                       {bar.serialNumber}
                     </td>
                     <td style={{ padding: '1.1rem 0.85rem' }}>
@@ -327,13 +336,13 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
                       {bar.refinery}
                     </td>
                     <td style={{ padding: '1.1rem 0.85rem', color: 'hsl(var(--text-secondary))' }}>
-                      <span style={{ color: 'white', fontWeight: 600 }}>{bar.weight.toFixed(2)} kg</span>
+                      <span style={{ color: 'hsl(var(--text-primary))', fontWeight: 600 }}>{bar.weight.toFixed(2)} kg</span>
                     </td>
                     <td style={{ padding: '1.1rem 0.85rem' }}>
                       <span className="badge badge-blue" style={{ fontSize: '0.65rem' }}>{bar.palletId}</span>
                     </td>
                     <td style={{ padding: '1.1rem 0.85rem', textAlign: 'right', fontWeight: 750, color: 'hsl(var(--gold-primary))', fontSize: '0.98rem' }}>
-                      ${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      {formatINR(val)}
                     </td>
                   </tr>
                 );
@@ -372,23 +381,23 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'hsl(var(--gold-primary))' }}>
             <TrendingUp size={16} />
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Gold Spot Price (oz):</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Gold Spot Price (1kg):</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ color: 'hsl(var(--text-muted))', fontWeight: 'bold', fontSize: '0.9rem' }}>$</span>
+            <span style={{ color: 'hsl(var(--text-muted))', fontWeight: 'bold', fontSize: '0.9rem' }}>₹</span>
             <input 
               type="number" 
               value={marketPrice}
               onChange={(e) => onUpdateMarketPrice(Number(e.target.value))}
               style={{ 
-                width: '105px', 
+                width: '120px', 
                 padding: '0.4rem 0.6rem', 
                 background: 'hsl(var(--bg-primary))', 
                 border: '1px solid hsl(var(--border-color))', 
                 borderRadius: '6px', 
                 textAlign: 'right', 
                 fontWeight: 700,
-                color: 'white',
+                color: 'hsl(var(--text-primary))',
                 fontSize: '0.9rem'
               }}
               min="1"
@@ -412,7 +421,7 @@ export default function GoldRegistry({ goldBars, onAddGoldBar, marketPrice, onUp
               }}>
                 <Scale size={32} />
               </div>
-              <h4 style={{ fontSize: '1.05rem', color: 'white', fontWeight: 700 }}>Vault Registry Guidelines</h4>
+              <h4 style={{ fontSize: '1.05rem', color: 'hsl(var(--text-primary))', fontWeight: 700 }}>Vault Registry Guidelines</h4>
               <p style={{ fontSize: '0.8rem', color: 'hsl(var(--text-muted))', maxWidth: '280px', lineHeight: '1.45' }}>
                 All registered bars must correspond to London Bullion Market Association (LBMA) standards. Ensure origin refineries are certified before executing vault entries.
               </p>

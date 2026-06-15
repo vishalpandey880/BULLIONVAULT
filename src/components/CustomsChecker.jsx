@@ -6,42 +6,42 @@ const MOCK_MANIFESTS = {
     title: 'Manifest 2026-09A (Valid)',
     rawText: `{
   "manifestId": "MNF-2026-09A",
-  "exporter": "Valcambi S.A.",
-  "exporterRegistryId": "CH-VAL-84920",
-  "importer": "London Central Vault",
+  "exporter": "MMTC-PAMP",
+  "exporterRegistryId": "IN-MMTC-84920",
+  "importer": "Reserve Bank Vault - Mumbai",
   "exportLicenseNumber": "EXP-LIC-99321",
   "licenseExpiry": "2028-12-31",
-  "totalWeightKg": 24.8,
-  "refineryCertification": "LBMA Certified",
-  "serialList": ["VAL-88219B", "VAL-88220C"]
+  "totalWeightKg": 2.0,
+  "refineryCertification": "BIS Hallmarked & LBMA",
+  "serialList": ["MMTC-88219B", "MMTC-88220C"]
 }`
   },
   manifestExpiredLicense: {
     title: 'Manifest 2026-12B (Expired License)',
     rawText: `{
   "manifestId": "MNF-2026-12B",
-  "exporter": "Rand Refinery",
-  "exporterRegistryId": "ZA-RND-11029",
-  "importer": "Zurich Alpine Deep Vault",
+  "exporter": "Kundan Refinery",
+  "exporterRegistryId": "IN-KUN-11029",
+  "importer": "State Bank of India Vault - Delhi",
   "exportLicenseNumber": "EXP-LIC-88210",
   "licenseExpiry": "2025-05-01",
-  "totalWeightKg": 12.4,
-  "refineryCertification": "LBMA Certified",
-  "serialList": ["RND-44210A"]
+  "totalWeightKg": 1.0,
+  "refineryCertification": "BIS Hallmarked & LBMA",
+  "serialList": ["KUN-44210A"]
 }`
   },
   manifestFakeSerials: {
     title: 'Manifest 2026-X99 (Fake Serials)',
     rawText: `{
   "manifestId": "MNF-2026-X99",
-  "exporter": "Perth Mint",
-  "exporterRegistryId": "AU-PRT-30291",
-  "importer": "New York Fed Sublevel",
+  "exporter": "Bangalore Refinery",
+  "exporterRegistryId": "IN-BAN-30291",
+  "importer": "Federal Reserve Sublevel",
   "exportLicenseNumber": "EXP-LIC-77421",
   "licenseExpiry": "2027-06-30",
-  "totalWeightKg": 37.2,
-  "refineryCertification": "LBMA Certified",
-  "serialList": ["PRT-90021A", "FAKE-SERIAL-99"]
+  "totalWeightKg": 2.0,
+  "refineryCertification": "BIS Hallmarked & LBMA",
+  "serialList": ["BAN-90021A", "FAKE-SERIAL-99"]
 }`
   }
 };
@@ -98,13 +98,13 @@ export default function CustomsChecker({ goldBars }) {
       });
       if (!licenseValid) allPassed = false;
 
-      // Check 3: Refinery LBMA Certification
-      const isCertified = data.refineryCertification === 'LBMA Certified';
+      // Check 3: Refinery LBMA/BIS Certification
+      const isCertified = data.refineryCertification === 'BIS Hallmarked & LBMA';
       checks.push({
         id: 'refinery',
         name: 'Refinery Compliance Certification',
         passed: isCertified,
-        detail: isCertified ? 'Refinery LBMA certification verified' : 'Refinery fails LBMA global compliance listing'
+        detail: isCertified ? 'Refinery BIS/LBMA certification verified' : 'Refinery fails BIS/LBMA global compliance listing'
       });
       if (!isCertified) allPassed = false;
 
@@ -117,7 +117,7 @@ export default function CustomsChecker({ goldBars }) {
           const barExists = goldBars.some(b => b.serialNumber.toLowerCase() === s.toLowerCase());
           
           // For checking simulation purposes, we allow standard preset serials and any registered serials
-          const isPresetRegistered = s.startsWith('VAL-88') || s.startsWith('RND-44') || s.startsWith('PRT-90');
+          const isPresetRegistered = s.startsWith('MMTC-88') || s.startsWith('KUN-44') || s.startsWith('BAN-90');
           if (!barExists && !isPresetRegistered) {
             serialsRegistered = false;
             failedSerials.push(s);
@@ -140,9 +140,9 @@ export default function CustomsChecker({ goldBars }) {
       let weightPassed = false;
       let weightDetail = '';
       if (data.totalWeightKg && data.serialList) {
-        const expectedWeight = data.serialList.length * 12.4;
+        const expectedWeight = data.serialList.length * 1.0; // Assuming 1kg bars
         const diff = Math.abs(data.totalWeightKg - expectedWeight);
-        if (diff < 1.0) {
+        if (diff < 0.1) {
           weightPassed = true;
           weightDetail = `Declared weight of ${data.totalWeightKg} kg matches serial list volume`;
         } else {
@@ -179,7 +179,7 @@ export default function CustomsChecker({ goldBars }) {
           Customs Paper Checker
         </h2>
         <p style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.92rem' }}>
-          Instantly audit import/export legal manifests against LBMA and customs registries.
+          Instantly audit import/export legal manifests against BIS/LBMA and customs registries.
         </p>
       </div>
 
@@ -211,7 +211,7 @@ export default function CustomsChecker({ goldBars }) {
                 padding: '0.45rem 0.9rem', 
                 background: 'hsl(var(--bg-tertiary))', 
                 border: '1px solid hsl(var(--border-color))', 
-                color: '#4ade80',
+                color: 'hsl(var(--success))',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
               }}
@@ -225,7 +225,7 @@ export default function CustomsChecker({ goldBars }) {
                 padding: '0.45rem 0.9rem', 
                 background: 'hsl(var(--bg-tertiary))', 
                 border: '1px solid hsl(var(--border-color))', 
-                color: '#f87171',
+                color: 'hsl(var(--danger))',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
               }}
@@ -262,13 +262,13 @@ export default function CustomsChecker({ goldBars }) {
                 padding: '1.1rem',
                 border: '1px solid hsl(var(--border-color))',
                 borderRadius: '8px',
-                color: '#a7f3d0' // Code-editor styled color
+                color: 'hsl(var(--text-primary))' // Code-editor styled color adjusted for both themes
               }}
             />
           </div>
 
           {errorMsg && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f87171', fontSize: '0.82rem', fontWeight: 500 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'hsl(var(--danger))', fontSize: '0.82rem', fontWeight: 500 }}>
               <AlertCircle size={15} />
               <span>{errorMsg}</span>
             </div>
@@ -316,20 +316,20 @@ export default function CustomsChecker({ goldBars }) {
                 style={{ 
                   padding: '1.25rem', 
                   borderRadius: '10px', 
-                  background: verificationResults.passed ? 'rgba(34, 197, 94, 0.05)' : 'rgba(239, 68, 68, 0.05)',
-                  border: `1px solid ${verificationResults.passed ? '#22c55e' : '#ef4444'}`,
+                  background: verificationResults.passed ? 'hsl(var(--success) / 0.05)' : 'hsl(var(--danger) / 0.05)',
+                  border: `1px solid ${verificationResults.passed ? 'hsl(var(--success))' : 'hsl(var(--danger))'}`,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '1.15rem'
                 }}
               >
                 {verificationResults.passed ? (
-                  <Check size={38} style={{ color: '#22c55e', background: 'rgba(34, 197, 94, 0.12)', padding: '6px', borderRadius: '50%', border: '1px solid rgba(34, 197, 94, 0.25)' }} />
+                  <Check size={38} style={{ color: 'hsl(var(--success))', background: 'hsl(var(--success) / 0.12)', padding: '6px', borderRadius: '50%', border: '1px solid hsl(var(--success) / 0.25)' }} />
                 ) : (
-                  <X size={38} style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.12)', padding: '6px', borderRadius: '50%', border: '1px solid rgba(239, 68, 68, 0.25)' }} />
+                  <X size={38} style={{ color: 'hsl(var(--danger))', background: 'hsl(var(--danger) / 0.12)', padding: '6px', borderRadius: '50%', border: '1px solid hsl(var(--danger) / 0.25)' }} />
                 )}
                 <div>
-                  <h4 style={{ fontSize: '1.05rem', color: verificationResults.passed ? '#4ade80' : '#f87171', fontWeight: 700 }}>
+                  <h4 style={{ fontSize: '1.05rem', color: verificationResults.passed ? 'hsl(var(--success))' : 'hsl(var(--danger))', fontWeight: 700 }}>
                     {verificationResults.passed ? 'MANIFEST COMPLIANT' : 'REGULATORY HOLD / CRITICAL FAILURE'}
                   </h4>
                   <p style={{ fontSize: '0.78rem', color: 'hsl(var(--text-muted))', marginTop: '0.2rem', fontFamily: 'var(--font-mono)' }}>
@@ -353,31 +353,31 @@ export default function CustomsChecker({ goldBars }) {
                   >
                     {chk.passed ? (
                       <div style={{
-                        background: 'rgba(34, 197, 94, 0.08)',
+                        background: 'hsl(var(--success) / 0.08)',
                         padding: '0.25rem',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
-                        color: '#22c55e',
+                        color: 'hsl(var(--success))',
                         marginTop: '2px'
                       }}>
                         <Check size={13} style={{ strokeWidth: 3 }} />
                       </div>
                     ) : (
                       <div style={{
-                        background: 'rgba(239, 68, 68, 0.08)',
+                        background: 'hsl(var(--danger) / 0.08)',
                         padding: '0.25rem',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
-                        color: '#ef4444',
+                        color: 'hsl(var(--danger))',
                         marginTop: '2px'
                       }}>
                         <X size={13} style={{ strokeWidth: 3 }} />
                       </div>
                     )}
                     <div>
-                      <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'white' }}>{chk.name}</div>
+                      <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'hsl(var(--text-primary))' }}>{chk.name}</div>
                       <div style={{ fontSize: '0.78rem', color: 'hsl(var(--text-secondary))', marginTop: '0.25rem', lineHeight: '1.4' }}>{chk.detail}</div>
                     </div>
                   </div>

@@ -143,7 +143,7 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', fontWeight: 500 }}>Security Scanner Modality</label>
               <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.15rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem', cursor: 'pointer', color: 'white', fontWeight: 500 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem', cursor: 'pointer', color: 'hsl(var(--text-primary))', fontWeight: 500 }}>
                   <input 
                     type="radio" 
                     name="scanType" 
@@ -155,7 +155,7 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                   />
                   Fingerprint ID
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem', cursor: 'pointer', color: 'white', fontWeight: 500 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem', cursor: 'pointer', color: 'hsl(var(--text-primary))', fontWeight: 500 }}>
                   <input 
                     type="radio" 
                     name="scanType" 
@@ -375,12 +375,12 @@ export default function AccessLog({ accessLogs, onAddLog, onUndoLog }) {
                   >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: 1, paddingRight: '1rem', flexShrink: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', flexShrink: 0 }}>
-                        <strong style={{ fontSize: '0.98rem', color: 'white' }}>{log.personnel}</strong>
+                        <strong style={{ fontSize: '0.98rem', color: 'hsl(var(--text-primary))' }}>{log.personnel}</strong>
                         <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>({log.role})</span>
                       </div>
                       
                       <div style={{ fontSize: '0.78rem', color: 'hsl(var(--text-secondary))', flexShrink: 0 }}>
-                        Scan: <span style={{ color: 'white', fontWeight: 500 }}>{log.scanType}</span> • Clearance: <span style={{ color: 'white', fontWeight: 500 }}>{log.clearance}</span>
+                        Scan: <span style={{ color: 'hsl(var(--text-primary))', fontWeight: 500 }}>{log.scanType}</span> • Clearance: <span style={{ color: 'hsl(var(--text-primary))', fontWeight: 500 }}>{log.clearance}</span>
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexShrink: 0 }}>

@@ -1,42 +1,44 @@
 import React, { useState } from 'react';
 import { Calendar, Plus, MapPin, Compass, Route, ShieldAlert, Award } from 'lucide-react';
+import { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
-// Cities graph definition for Safest Delivery Route
+// Indian Cities Graph Definition with Real Geographic Coordinates
 const CITIES = {
-  Zurich: { x: 400, y: 320, label: 'Zurich (CH)' },
-  Munich: { x: 500, y: 220, label: 'Munich (DE)' },
-  Frankfurt: { x: 380, y: 150, label: 'Frankfurt (DE)' },
-  Paris: { x: 180, y: 250, label: 'Paris (FR)' },
-  Brussels: { x: 230, y: 120, label: 'Brussels (BE)' },
-  London: { x: 80, y: 80, label: 'London (UK)' },
-  Geneva: { x: 300, y: 350, label: 'Geneva (CH)' }
+  Delhi: { lat: 28.6139, lng: 77.2090, label: 'New Delhi (DL)' },
+  Mumbai: { lat: 19.0760, lng: 72.8777, label: 'Mumbai (MH)' },
+  Bangalore: { lat: 12.9716, lng: 77.5946, label: 'Bangalore (KA)' },
+  Chennai: { lat: 13.0827, lng: 80.2707, label: 'Chennai (TN)' },
+  Kolkata: { lat: 22.5726, lng: 88.3639, label: 'Kolkata (WB)' },
+  Hyderabad: { lat: 17.3850, lng: 78.4867, label: 'Hyderabad (TG)' },
+  Ahmedabad: { lat: 23.0225, lng: 72.5714, label: 'Ahmedabad (GJ)' }
 };
 
 const EDGES = [
-  { u: 'London', v: 'Brussels', dist: 320, threat: 0.12 },
-  { u: 'London', v: 'Paris', dist: 450, threat: 0.08 },
-  { u: 'Brussels', v: 'Paris', dist: 310, threat: 0.15 },
-  { u: 'Brussels', v: 'Frankfurt', dist: 400, threat: 0.05 },
-  { u: 'Paris', v: 'Frankfurt', dist: 570, threat: 0.22 },
-  { u: 'Paris', v: 'Geneva', dist: 540, threat: 0.06 },
-  { u: 'Frankfurt', v: 'Munich', dist: 390, threat: 0.18 },
-  { u: 'Frankfurt', v: 'Zurich', dist: 410, threat: 0.04 },
-  { u: 'Munich', v: 'Zurich', dist: 310, threat: 0.11 },
-  { u: 'Geneva', v: 'Zurich', dist: 280, threat: 0.02 },
+  { u: 'Delhi', v: 'Ahmedabad', dist: 940, threat: 0.08 },
+  { u: 'Delhi', v: 'Kolkata', dist: 1530, threat: 0.15 },
+  { u: 'Delhi', v: 'Hyderabad', dist: 1580, threat: 0.12 },
+  { u: 'Ahmedabad', v: 'Mumbai', dist: 530, threat: 0.05 },
+  { u: 'Mumbai', v: 'Hyderabad', dist: 710, threat: 0.11 },
+  { u: 'Mumbai', v: 'Bangalore', dist: 980, threat: 0.18 },
+  { u: 'Hyderabad', v: 'Kolkata', dist: 1490, threat: 0.22 },
+  { u: 'Hyderabad', v: 'Bangalore', dist: 570, threat: 0.07 },
+  { u: 'Hyderabad', v: 'Chennai', dist: 630, threat: 0.09 },
+  { u: 'Bangalore', v: 'Chennai', dist: 350, threat: 0.04 },
 ];
 
-export default function Logistics({ transportRequests, onAddTransportRequest, viewMode }) {
+export default function Logistics({ transportRequests, onAddTransportRequest, viewMode, theme }) {
   // Transport Organizer state
-  const [origin, setOrigin] = useState('Zurich');
-  const [destination, setDestination] = useState('Munich');
+  const [origin, setOrigin] = useState('Mumbai');
+  const [destination, setDestination] = useState('Delhi');
   const [shipmentTime, setShipmentTime] = useState('');
   const [barCount, setBarCount] = useState(10);
   const [escortLevel, setEscortLevel] = useState('HIGH');
   const [logisticsMessage, setLogisticsMessage] = useState('');
 
   // Routing Planner state
-  const [routeStart, setRouteStart] = useState('London');
-  const [routeEnd, setRouteEnd] = useState('Zurich');
+  const [routeStart, setRouteStart] = useState('Mumbai');
+  const [routeEnd, setRouteEnd] = useState('Kolkata');
 
   // Add transport request
   const handleAddRequest = (e) => {
@@ -67,7 +69,6 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
   };
 
   // Graph Calculations
-  // Find paths using simple DFS path search for all routes, then sorting to find "safest" vs "fastest".
   const getAllPaths = (start, end) => {
     const paths = [];
     const adj = {};
@@ -113,15 +114,19 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
 
   const paths = getAllPaths(routeStart, routeEnd);
 
-  // Safest Path = Path with lowest totalThreat
-  // Fastest Path = Path with lowest totalDist
+  // Safest Path = lowest totalThreat
   const safestPath = paths.length > 0 ? [...paths].sort((a, b) => a.totalThreat - b.totalThreat)[0] : null;
+  // Fastest Path = lowest totalDist
   const fastestPath = paths.length > 0 ? [...paths].sort((a, b) => a.totalDist - b.totalDist)[0] : null;
 
   // Sorting Transport Requests by Shipment Time
   const sortedRequests = [...transportRequests].sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  // Render Sub-sections
+  // Determine Leaflet Tile Layer URL based on theme
+  const mapTileUrl = theme === 'light' 
+    ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+    : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+
   const renderOrganizerSection = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
@@ -164,7 +169,7 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
                 value={shipmentTime} 
                 onChange={(e) => setShipmentTime(e.target.value)} 
                 required 
-                style={{ colorScheme: 'dark' }}
+                style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
               />
             </div>
             <div style={{ flex: 1, minWidth: '160px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -188,7 +193,7 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
             </select>
           </div>
 
-          {logisticsMessage && <div style={{ fontSize: '0.82rem', color: '#4ade80', fontWeight: 500 }}>{logisticsMessage}</div>}
+          {logisticsMessage && <div style={{ fontSize: '0.82rem', color: 'hsl(var(--success))', fontWeight: 500 }}>{logisticsMessage}</div>}
 
           <button 
             type="submit" 
@@ -245,10 +250,10 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.9rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       <MapPin size={13} style={{ color: 'hsl(var(--gold-primary))' }} />
-                      <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'white' }}>{req.origin} → {req.destination}</span>
+                      <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'hsl(var(--text-primary))' }}>{req.origin} → {req.destination}</span>
                     </div>
                     <span style={{ fontSize: '0.82rem', color: 'hsl(var(--text-secondary))', fontWeight: 500 }}>
-                      <strong style={{ color: 'white' }}>{req.barCount}</strong> Bars ({(req.barCount * 12.4).toFixed(1)} kg)
+                      <strong style={{ color: 'hsl(var(--text-primary))' }}>{req.barCount}</strong> Bars ({(req.barCount * 1.0).toFixed(1)} kg)
                     </span>
                   </div>
                 </div>
@@ -262,7 +267,7 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
   );
 
   const renderRouteSection = () => (
-    <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'hsl(var(--gold-primary))' }}>
           <div style={{
@@ -274,9 +279,9 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
           }}>
             <Route size={18} />
           </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Tactical Delivery Route Planner</h3>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Geographic Route Planner</h3>
         </div>
-        <span className="badge badge-blue" style={{ fontSize: '0.62rem' }}>Radar Vector HUD</span>
+        <span className="badge badge-blue" style={{ fontSize: '0.62rem' }}>Leaflet Mapping Active</span>
       </div>
 
       {/* Route selectors */}
@@ -295,121 +300,95 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
         </div>
       </div>
 
-      {/* Graphical Map Representation (SVG) */}
-      <div className="radar-grid" style={{ 
+      {/* Leaflet Map Integration */}
+      <div style={{ 
         border: '1px solid hsl(var(--border-color))', 
         borderRadius: '12px', 
-        background: 'hsl(var(--bg-tertiary) / 0.45)', 
-        height: '365px', 
+        overflow: 'hidden',
+        height: '420px', 
         position: 'relative', 
-        overflow: 'hidden'
+        boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
       }}>
-        <svg style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-          <defs>
-            <filter id="glow-vector" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
+        <MapContainer 
+          center={[22.5, 78.5]} 
+          zoom={4.5} 
+          style={{ height: '100%', width: '100%', background: theme === 'light' ? '#f5f5f7' : '#0a0d14' }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url={mapTileUrl}
+          />
 
-          {/* Draw Edges */}
+          {/* Render All Background Edges */}
           {EDGES.map((e, index) => {
             const uNode = CITIES[e.u];
             const vNode = CITIES[e.v];
             if (!uNode || !vNode) return null;
 
-            // Check if this edge is in safest or fastest paths
-            const isSafestEdge = safestPath && safestPath.nodes.includes(e.u) && safestPath.nodes.includes(e.v) && 
-              Math.abs(safestPath.nodes.indexOf(e.u) - safestPath.nodes.indexOf(e.v)) === 1;
-            const isFastestEdge = fastestPath && fastestPath.nodes.includes(e.u) && fastestPath.nodes.includes(e.v) && 
-              Math.abs(fastestPath.nodes.indexOf(e.u) - fastestPath.nodes.indexOf(e.v)) === 1;
-
-            let strokeColor = 'rgba(255, 255, 255, 0.08)';
-            let strokeWidth = '1.5';
-            let filterGlow = 'none';
-
-            if (isSafestEdge && isFastestEdge) {
-              strokeColor = 'hsl(var(--gold-primary))';
-              strokeWidth = '3.5';
-              filterGlow = 'url(#glow-vector)';
-            } else if (isSafestEdge) {
-              strokeColor = '#22c55e'; // Green for safest
-              strokeWidth = '3.5';
-              filterGlow = 'url(#glow-vector)';
-            } else if (isFastestEdge) {
-              strokeColor = 'hsl(var(--accent-blue))'; // Blue for fastest
-              strokeWidth = '3.5';
-              filterGlow = 'url(#glow-vector)';
-            }
-
             return (
-              <g key={index}>
-                <line 
-                  x1={uNode.x} 
-                  y1={uNode.y} 
-                  x2={vNode.x} 
-                  y2={vNode.y} 
-                  stroke={strokeColor} 
-                  strokeWidth={strokeWidth} 
-                  filter={filterGlow}
-                  style={{ transition: 'all 0.4s ease' }}
-                />
-                <text 
-                  x={(uNode.x + vNode.x) / 2} 
-                  y={(uNode.y + vNode.y) / 2 - 6}
-                  fill="hsl(var(--text-muted))" 
-                  fontSize="9px" 
-                  fontFamily="var(--font-mono)"
-                  textAnchor="middle"
-                >
-                  {e.dist}km / {(e.threat * 100).toFixed(0)}%
-                </text>
-              </g>
+              <Polyline 
+                key={`edge-${index}`}
+                positions={[[uNode.lat, uNode.lng], [vNode.lat, vNode.lng]]}
+                pathOptions={{ color: 'hsl(var(--text-muted))', weight: 1.5, opacity: 0.3 }}
+              />
             );
           })}
 
-          {/* Draw Nodes */}
+          {/* Render Safest Path */}
+          {safestPath && safestPath.nodes.length > 1 && (
+            <Polyline 
+              positions={safestPath.nodes.map(n => [CITIES[n].lat, CITIES[n].lng])}
+              pathOptions={{ color: '#22c55e', weight: 4, opacity: 0.8 }}
+            />
+          )}
+
+          {/* Render Fastest Path (if different from safest) */}
+          {fastestPath && fastestPath.nodes.length > 1 && fastestPath.totalDist !== safestPath?.totalDist && (
+            <Polyline 
+              positions={fastestPath.nodes.map(n => [CITIES[n].lat, CITIES[n].lng])}
+              pathOptions={{ color: '#3b82f6', weight: 4, opacity: 0.8, dashArray: '8, 8' }}
+            />
+          )}
+
+          {/* Render City Nodes */}
           {Object.entries(CITIES).map(([key, city]) => {
             const isSelected = key === routeStart || key === routeEnd;
             const isInSafest = safestPath && safestPath.nodes.includes(key);
-            
+
+            let markerColor = 'hsl(var(--bg-secondary))';
+            let strokeColor = 'hsl(var(--border-color))';
+            if (isSelected) {
+              markerColor = 'hsl(var(--gold-primary))';
+              strokeColor = '#fff';
+            } else if (isInSafest) {
+              markerColor = '#22c55e'; // Success Green
+              strokeColor = '#fff';
+            }
+
             return (
-              <g key={key}>
-                {isSelected && (
-                  <circle 
-                    cx={city.x} 
-                    cy={city.y} 
-                    r="18" 
-                    fill="none" 
-                    stroke="hsl(var(--gold-primary) / 0.35)"
-                    strokeWidth="1.5"
-                    style={{ animation: 'pulse-light 2s infinite' }}
-                  />
-                )}
-                <circle 
-                  cx={city.x} 
-                  cy={city.y} 
-                  r={isSelected ? '9' : isInSafest ? '6.5' : '5'} 
-                  fill={isSelected ? 'hsl(var(--gold-primary))' : isInSafest ? '#22c55e' : 'hsl(var(--bg-secondary))'}
-                  stroke={isSelected ? 'white' : 'hsl(var(--border-color))'}
-                  strokeWidth="2"
-                  style={{ transition: 'all 0.3s ease', cursor: 'pointer' }}
-                />
-                <text 
-                  x={city.x} 
-                  y={city.y - 15} 
-                  fill={isSelected ? 'white' : 'hsl(var(--text-secondary))'} 
-                  fontSize="10.5px" 
-                  fontWeight={isSelected ? 800 : 600} 
-                  fontFamily="var(--font-display)"
-                  textAnchor="middle"
-                >
-                  {city.label}
-                </text>
-              </g>
+              <CircleMarker 
+                key={key}
+                center={[city.lat, city.lng]}
+                radius={isSelected ? 8 : isInSafest ? 6 : 5}
+                pathOptions={{ 
+                  fillColor: markerColor, 
+                  color: strokeColor, 
+                  weight: 2, 
+                  fillOpacity: 1 
+                }}
+              >
+                <Popup>
+                  <div style={{ fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
+                    {city.label}
+                  </div>
+                </Popup>
+                <Tooltip direction="bottom" offset={[0, 10]} opacity={0.9} permanent={isSelected}>
+                  <span style={{ fontWeight: 'bold' }}>{key}</span>
+                </Tooltip>
+              </CircleMarker>
             );
           })}
-        </svg>
+        </MapContainer>
       </div>
 
       {/* Tactical Path Comparison Panel */}
@@ -419,40 +398,40 @@ export default function Logistics({ transportRequests, onAddTransportRequest, vi
           {/* Safest route dossier */}
           <div 
             className="glass-card" 
-            style={{ borderLeft: '4px solid #22c55e', padding: '1rem', background: 'rgba(34, 197, 94, 0.03)' }}
+            style={{ borderLeft: '4px solid hsl(var(--success))', padding: '1rem', background: 'hsl(var(--success) / 0.03)' }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong style={{ color: '#4ade80', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem', letterSpacing: '0.04em' }}>
+              <strong style={{ color: 'hsl(var(--success))', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem', letterSpacing: '0.04em' }}>
                 <Compass size={14} /> SAFEST TACTICAL ROUTE (LOWEST RISK)
               </strong>
               <span className="badge badge-success" style={{ fontSize: '0.62rem', padding: '0.15rem 0.45rem' }}>Threat Index: {(safestPath.totalThreat * 100).toFixed(0)}%</span>
             </div>
-            <p style={{ fontSize: '0.88rem', marginTop: '0.4rem', color: 'white', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+            <p style={{ fontSize: '0.88rem', marginTop: '0.4rem', color: 'hsl(var(--text-primary))', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
               {safestPath.nodes.join(' → ')}
             </p>
             <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.3rem' }}>
-              <span>Distance: <strong style={{ color: 'white' }}>{safestPath.totalDist} km</strong></span>
-              <span>Est. Travel Time: <strong style={{ color: 'white' }}>{(safestPath.totalDist / 80).toFixed(1)} hrs</strong></span>
+              <span>Distance: <strong style={{ color: 'hsl(var(--text-primary))' }}>{safestPath.totalDist} km</strong></span>
+              <span>Est. Travel Time: <strong style={{ color: 'hsl(var(--text-primary))' }}>{(safestPath.totalDist / 80).toFixed(1)} hrs</strong></span>
             </div>
           </div>
 
           {/* Fastest route dossier */}
           <div 
             className="glass-card" 
-            style={{ borderLeft: '4px solid hsl(var(--accent-blue))', padding: '1rem', background: 'rgba(59, 130, 246, 0.03)' }}
+            style={{ borderLeft: '4px solid hsl(var(--accent-blue))', padding: '1rem', background: 'hsl(var(--accent-blue) / 0.03)' }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong style={{ color: '#60a5fa', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem', letterSpacing: '0.04em' }}>
+              <strong style={{ color: 'hsl(var(--accent-blue))', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem', letterSpacing: '0.04em' }}>
                 <Route size={14} /> FASTEST DIRECT VECTOR (MINIMUM DISTANCE)
               </strong>
               <span className="badge badge-blue" style={{ fontSize: '0.62rem', padding: '0.15rem 0.45rem' }}>Threat Index: {(fastestPath.totalThreat * 100).toFixed(0)}%</span>
             </div>
-            <p style={{ fontSize: '0.88rem', marginTop: '0.4rem', color: 'white', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+            <p style={{ fontSize: '0.88rem', marginTop: '0.4rem', color: 'hsl(var(--text-primary))', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
               {fastestPath.nodes.join(' → ')}
             </p>
             <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.3rem' }}>
-              <span>Distance: <strong style={{ color: 'white' }}>{fastestPath.totalDist} km</strong></span>
-              <span>Est. Travel Time: <strong style={{ color: 'white' }}>{(fastestPath.totalDist / 80).toFixed(1)} hrs</strong></span>
+              <span>Distance: <strong style={{ color: 'hsl(var(--text-primary))' }}>{fastestPath.totalDist} km</strong></span>
+              <span>Est. Travel Time: <strong style={{ color: 'hsl(var(--text-primary))' }}>{(fastestPath.totalDist / 80).toFixed(1)} hrs</strong></span>
             </div>
           </div>
 
